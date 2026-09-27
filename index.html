@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r7">
+  <meta name="app-revision" content="player2 r8">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -58,7 +58,7 @@ const edgeFillCanvas=document.createElement('canvas'),edgeFillContext=edgeFillCa
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 let scrubbing=false;
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,displayedComplete=null,blendAt=0,busy=false,lastRequest=-Infinity,worker=null;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,previousView=null,displayedComplete=null,blendAt=0,motionBlendMs=120,busy=false,lastRequest=-Infinity,worker=null;
 let edgeWorker=null,edgeBusy=false,edgeRendered=null,edgeRequested=null,lastEdgeRequest=-Infinity,edgeEpoch=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function cameraAt(t) {
@@ -138,6 +138,16 @@ function compute(p) {
 }
 function finish(p,pixels) {
   if(rendered&&(!completeFrames||shortBlend||motionFrames)){
+    if(motionFrames){
+      previousView=motionView(rendered,cameraAt(position));
+      const nextView=motionView(p,cameraAt(position));
+      const distance=Math.hypot(nextView.cx-previousView.cx,nextView.cy-previousView.cy)/nextView.span;
+      const scale=Math.abs(Math.log(nextView.span/previousView.span));
+      // Fast turns at depth can travel farther than the guard band while a
+      // frame is calculating. Spread that handoff over several display ticks.
+      const turn=position>110&&position<195;
+      motionBlendMs=130+Math.min(turn?430:170,850*(distance+scale*.45));
+    }
     previousCanvas.width=renderCanvas.width;previousCanvas.height=renderCanvas.height;
     previousContext.drawImage(renderCanvas,0,0);previous=rendered;blendAt=performance.now();
   }
@@ -191,6 +201,12 @@ function covers(source,p){
   const r=projection(source,p);
   return r.x<=.5&&r.y<=.5&&r.x+r.size>=799.5&&r.y+r.size>=799.5;
 }
+function motionView(source,p){
+  const span=Math.min(p.span,source.span);
+  const margin=(source.span-span)/2;
+  return {...p,span,cx:clamp(p.cx,source.cx-margin,source.cx+margin),
+    cy:clamp(p.cy,source.cy-margin,source.cy+margin)};
+}
 function clearEdge(){edgeEpoch++;edgeRendered=null;edgeRequested=null;lastEdgeRequest=-Infinity}
 function drawProjected(canvas,source,p,opacity) {
   const rect=projection(source,p);
@@ -240,25 +256,31 @@ function draw(t) {
     if(rendered&&(motionFrames||displayedComplete!==rendered||shortBlend&&previous)){
       ctx.imageSmoothingEnabled=true;
       if(motionFrames){
-        // Reproject one fully calculated image at the current camera pose.
-        // Stop at its covered boundary while the next image is calculating;
-        // this never exposes a blank or stretched edge.
-        const span=Math.min(p.span,rendered.span);
-        const margin=(rendered.span-span)/2;
-        const view={...p,span,cx:clamp(p.cx,rendered.cx-margin,rendered.cx+margin),
-          cy:clamp(p.cy,rendered.cy-margin,rendered.cy+margin)};
+        // Move both complete images through the same intermediate camera.
+        // Each image is constrained to its own calculated border.
+        const fraction=previous?clamp((performance.now()-blendAt)/motionBlendMs,0,1):1;
+        const ease=fraction*fraction*(3-2*fraction);
+        const travel=previousView&&fraction<1?{
+          ...p,cx:previousView.cx+(p.cx-previousView.cx)*ease,
+          cy:previousView.cy+(p.cy-previousView.cy)*ease,
+          span:previousView.span*Math.pow(p.span/previousView.span,ease)
+        }:p;
+        const view=motionView(rendered,travel);
         const rect=projection(rendered,view);
         ctx.drawImage(renderCanvas,rect.x,rect.y,rect.size,rect.size);
+        if(previous&&fraction<1){
+          const oldView=motionView(previous,travel);
+          const old=projection(previous,oldView);
+          ctx.globalAlpha=1-ease;
+          ctx.drawImage(previousCanvas,old.x,old.y,old.size,old.size);
+          ctx.globalAlpha=1;
+        }else {previous=null;previousView=null}
       }else ctx.drawImage(renderCanvas,0,0,800,800);
-      if((shortBlend||motionFrames)&&previous){
+      if(shortBlend&&previous){
         const fade=clamp((performance.now()-blendAt)/120,0,1);
         if(fade<1){
           ctx.globalAlpha=1-fade;
-          if(motionFrames){
-            const old=projection(previous,p);
-            if(covers(previous,p))ctx.drawImage(previousCanvas,old.x,old.y,old.size,old.size);
-            else ctx.drawImage(previousCanvas,0,0,800,800);
-          }else ctx.drawImage(previousCanvas,0,0,800,800);
+          ctx.drawImage(previousCanvas,0,0,800,800);
           ctx.globalAlpha=1;
         }else previous=null;
       }
