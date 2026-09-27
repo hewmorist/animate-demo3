@@ -29,22 +29,23 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r1 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r2 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
 <script>
 'use strict';
 // Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
-const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":29,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":58,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":87,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radiusFrom":1.2e-9,"radiusTo":2.4e-9,"from":0,"to":120}},{"time":116,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radiusFrom":2.4e-9,"radiusTo":2.4e-9,"from":120,"to":240}},{"time":145,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radiusFrom":2.4e-9,"radiusTo":1.2e-9,"from":240,"to":360}},{"time":174,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":203,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":232,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
+const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":29,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":58,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":87,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0,"progressTo":0.06666666666666667,"from":0,"to":120}},{"time":92.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.06666666666666667,"progressTo":0.13333333333333333,"from":120,"to":240}},{"time":98.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.13333333333333333,"progressTo":0.2,"from":240,"to":360}},{"time":104.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.2,"progressTo":0.26666666666666666,"from":360,"to":480}},{"time":110.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.26666666666666666,"progressTo":0.3333333333333333,"from":480,"to":600}},{"time":116,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.3333333333333333,"progressTo":0.4,"from":600,"to":720}},{"time":121.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.4,"progressTo":0.4666666666666667,"from":720,"to":840}},{"time":127.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.4666666666666667,"progressTo":0.5333333333333333,"from":840,"to":960}},{"time":133.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.5333333333333333,"progressTo":0.6,"from":960,"to":1080}},{"time":139.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6,"progressTo":0.6666666666666666,"from":1080,"to":1200}},{"time":145,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6666666666666666,"progressTo":0.7333333333333333,"from":1200,"to":1320}},{"time":150.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.7333333333333333,"progressTo":0.8,"from":1320,"to":1440}},{"time":156.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8,"progressTo":0.8666666666666667,"from":1440,"to":1560}},{"time":162.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8666666666666667,"progressTo":0.9333333333333333,"from":1560,"to":1680}},{"time":168.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.9333333333333333,"progressTo":1,"from":1680,"to":1800}},{"time":174,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":203,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":232,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const playButton=document.getElementById('play'),status=document.getElementById('status'),sc=document.getElementById('sc');
 const testPanel=document.getElementById('track-test'),embedCode=document.getElementById('embed-code'),loadTrack=document.getElementById('load-track');
 const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
 const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
+const previousCanvas=document.createElement('canvas'),previousContext=previousCanvas.getContext('2d');
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,busy=false,sent=null,lastRequest=-Infinity,worker=null;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,busy=false,sent=null,lastRequest=-Infinity,worker=null;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function cameraAt(t) {
   let index=0;for(let i=1;i<recipe.segments.length;i++)if(t>=recipe.segments[i].time)index=i;
@@ -57,9 +58,11 @@ function cameraAt(t) {
     const angle=(s.orbit.from+(s.orbit.to-s.orbit.from)*f)*Math.PI/180;
     const radius=s.orbit.relativeRadius!==undefined
       ?s.orbit.relativeRadius*s.zoom.from*Math.pow(s.zoom.to/s.zoom.from,f)*(s.orbit.fadeIn?f*f*(3-2*f):s.orbit.fadeOut?1-f*f*(3-2*f):1)
-      :s.orbit.radiusFrom!==undefined
-        ?s.orbit.radiusFrom+(s.orbit.radiusTo-s.orbit.radiusFrom)*f*f*(3-2*f)
-        :s.orbit.radius;
+      :s.orbit.bulge!==undefined
+        ?s.orbit.radius+s.orbit.bulge*Math.sin(Math.PI*(s.orbit.progressFrom+(s.orbit.progressTo-s.orbit.progressFrom)*f))**2
+        :s.orbit.radiusFrom!==undefined
+          ?s.orbit.radiusFrom+(s.orbit.radiusTo-s.orbit.radiusFrom)*f*f*(3-2*f)
+          :s.orbit.radius;
     cx+=radius*Math.cos(angle);cy+=radius*Math.sin(angle);
   }
   return {cx,cy,span:s.zoom.from*Math.pow(s.zoom.to/s.zoom.from,f),
@@ -114,6 +117,10 @@ function compute(p) {
   return pixels;
 }
 function finish(p,pixels) {
+  if(rendered){
+    previousCanvas.width=renderCanvas.width;previousCanvas.height=renderCanvas.height;
+    previousContext.drawImage(renderCanvas,0,0);previous=rendered;blendAt=performance.now();
+  }
   renderCanvas.width=p.width;renderCanvas.height=p.width;
   const image=renderContext.createImageData(p.width,p.width);image.data.set(pixels);
   renderContext.putImageData(image,0,0);rendered=p;busy=false;draw(position);
@@ -132,16 +139,23 @@ function request(p) {
   if(worker)worker.postMessage(job);
   else setTimeout(()=>finish(p,compute(job)),0);
 }
+function drawProjected(canvas,source,p,opacity) {
+  const n=canvas.width,sourceSize=n*p.span/source.span;
+  const sx=n/2+(p.cx-source.cx)*n/source.span-sourceSize/2;
+  const sy=n/2-(p.cy-source.cy)*n/source.span-sourceSize/2;
+  ctx.globalAlpha=opacity;ctx.imageSmoothingEnabled=true;
+  if(sourceSize<1||sourceSize>n*2||sx>n||sy>n||sx+sourceSize<0||sy+sourceSize<0)
+    ctx.drawImage(canvas,0,0,n,n,0,0,800,800);
+  else ctx.drawImage(canvas,sx,sy,sourceSize,sourceSize,0,0,800,800);
+  ctx.globalAlpha=1;
+}
 function draw(t) {
   const p=cameraAt(t);ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
   if(rendered){
-    const n=renderCanvas.width,sourceSize=n*p.span/rendered.span;
-    const sx=n/2+(p.cx-rendered.cx)*n/rendered.span-sourceSize/2;
-    const sy=n/2-(p.cy-rendered.cy)*n/rendered.span-sourceSize/2;
-    ctx.imageSmoothingEnabled=true;
-    if(sourceSize<1||sourceSize>n*2||sx>n||sy>n||sx+sourceSize<0||sy+sourceSize<0)
-      ctx.drawImage(renderCanvas,0,0,n,n,0,0,800,800);
-    else ctx.drawImage(renderCanvas,sx,sy,sourceSize,sourceSize,0,0,800,800);
+    const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
+    if(mix<1)drawProjected(previousCanvas,previous,p,1);
+    else previous=null;
+    drawProjected(renderCanvas,rendered,p,mix);
   }
   const change=!rendered||Math.abs(Math.log(p.span/rendered.span))>(playing?.055:1e-5)||
     Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
