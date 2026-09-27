@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r9">
+  <meta name="app-revision" content="player2 r10">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -391,6 +391,9 @@ function draw(t) {
   if(change&&(!cacheDrawn||nearCacheEnd)&&!busy&&performance.now()-lastRequest>90)request(p);
   if(!scrubbing)timeline.value=t;
   timeLabel.textContent=formatTime(t)+' / '+formatTime(recipe.duration);
+  if(cacheFrames&&options.get('debug')==='1'&&
+     (!status.textContent||status.textContent.startsWith('Precomputed')))
+    status.textContent=`Precomputed ${cacheDone}/${cacheTimes.length} frames`;
 }
 function formatTime(t){const n=Math.floor(clamp(t,0,recipe.duration));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
 timeline.addEventListener('input',()=>{
