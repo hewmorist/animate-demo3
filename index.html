@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r4">
+  <meta name="app-revision" content="player2 r5">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -35,10 +35,13 @@
 'use strict';
 // Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
 const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
-if(new URLSearchParams(location.search).get('path')==='straight'){
+const options=new URLSearchParams(location.search);
+const completeFrames=options.get('frames')==='complete';
+if(options.get('path')==='straight'){
   recipe.segments.forEach(segment=>delete segment.orbit);
   document.title='Planet Mandelbrot — straight path test';
 }
+if(completeFrames)document.title='Planet Mandelbrot — complete frames test';
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const timeline=document.getElementById('timeline');
 const timeLabel=document.getElementById('time-label');
@@ -52,7 +55,7 @@ const edgeFillCanvas=document.createElement('canvas'),edgeFillContext=edgeFillCa
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 let scrubbing=false;
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,busy=false,lastRequest=-Infinity,worker=null;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,displayedComplete=null,blendAt=0,busy=false,lastRequest=-Infinity,worker=null;
 let edgeWorker=null,edgeBusy=false,edgeRendered=null,edgeRequested=null,lastEdgeRequest=-Infinity,edgeEpoch=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function cameraAt(t) {
@@ -131,7 +134,7 @@ function compute(p) {
   return pixels;
 }
 function finish(p,pixels) {
-  if(rendered){
+  if(rendered&&!completeFrames){
     previousCanvas.width=renderCanvas.width;previousCanvas.height=renderCanvas.height;
     previousContext.drawImage(renderCanvas,0,0);previous=rendered;blendAt=performance.now();
   }
@@ -226,12 +229,18 @@ function drawProjected(canvas,source,p,opacity) {
 }
 function draw(t) {
   const p=cameraAt(t);
-  const fullCoverage=rendered&&covers(rendered,p);
-  const edgeCoverage=t>=recipe.duration/2&&rendered&&edgeRendered&&
-    covers(edgeRendered,p)&&covers(rendered,edgeRendered.edgeOutside);
-  // Use projected pixels where they cover the view; otherwise keep each
-  // completed full frame visible while the renderer catches the moving camera.
-  if(rendered){
+  if(completeFrames){
+    if(rendered&&displayedComplete!==rendered){
+      ctx.imageSmoothingEnabled=true;
+      ctx.drawImage(renderCanvas,0,0,800,800);
+      displayedComplete=rendered;
+    }
+  }else if(rendered){
+    const fullCoverage=covers(rendered,p);
+    const edgeCoverage=t>=recipe.duration/2&&edgeRendered&&
+      covers(edgeRendered,p)&&covers(rendered,edgeRendered.edgeOutside);
+    // Use projected pixels where they cover the view; otherwise keep each
+    // completed full frame visible while the renderer catches the moving camera.
     ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
     const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
     if(fullCoverage||edgeCoverage){
@@ -250,7 +259,7 @@ function draw(t) {
     }
     if(mix>=1)previous=null;
   }
-  if(playing&&t>=recipe.duration/2&&rendered&&edgeWorker){
+  if(!completeFrames&&playing&&t>=recipe.duration/2&&rendered&&edgeWorker){
     const future=cameraAt(Math.min(recipe.duration,t+1.1));
     const needsEdges=future.span>rendered.span*1.06;
     const needsRefresh=!edgeRequested||future.span>edgeRequested.span*1.12;
