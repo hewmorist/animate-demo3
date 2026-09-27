@@ -13,3 +13,7 @@ Open the Pages URL with `?path=straight` to remove the camera orbit while preser
 ## Complete-frame comparison
 
 Open the Pages URL with `?frames=complete` to display only finished Mandelbrot renders. It holds each full frame until the next worker result and never projects or crossfades an intermediate image. The ordinary URL retains smooth projected motion. Compare the two spiral modes around 0:27–0:37 for sharpness versus choppiness. The option can be combined with `path=straight` if needed.
+
+## Finished-frame blend comparison
+
+Open the Pages URL with `?frames=blend` to hold complete renders and dissolve from the previous finished image for 120 ms when a new one arrives. This leaves the fractal fully rendered between updates while softening the cut. Compare with `?frames=complete` (hard cuts) and the ordinary URL (continuous projection).
