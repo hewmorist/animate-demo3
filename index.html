@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r2">
+  <meta name="app-revision" content="player2 r3">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -13,7 +13,9 @@
     canvas { display: block; width: min(92vw,65svh,880px); aspect-ratio: 1; flex: none; border-radius: 14px; background: #171923; box-shadow: 0 18px 75px #000a }
     button { margin-top: 24px; min-width: 160px; padding: .8rem 1.35rem; font: 700 1.1rem system-ui,-apple-system,Segoe UI,sans-serif; color: #15171c; background: #f0dcc1; border: 0; border-radius: 13px; cursor: pointer }
     button:disabled { opacity: .6; cursor: wait }
-    #timeline { display: block; width: min(92vw,65svh,880px); height: 24px; margin-top: 16px; accent-color: #70e8ff; touch-action: none }
+    #transport { display: flex; align-items: center; gap: 12px; width: min(92vw,65svh,880px); margin-top: 16px }
+    #timeline { flex: 1; min-width: 0; height: 24px; accent-color: #70e8ff; touch-action: none }
+    #time-label { min-width: 6.5em; text-align: right; color: #b7c1d4; font-size: .8rem; font-variant-numeric: tabular-nums; white-space: nowrap }
     #status { position: fixed; left: 12px; right: 12px; bottom: 28px; margin: 0; text-align: center; font-size: .85rem; color: #ffc0aa }
     #status:empty { display: none }
     .soundcloud { position: absolute; left: -10000px; width: 300px; height: 166px; overflow: hidden }
@@ -23,7 +25,7 @@
 <body>
 <main>
   <canvas id="stage" width="800" height="800" aria-label="Mandelbrot animation"></canvas>
-  <input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Track position">
+  <div id="transport"><input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Track position"><span id="time-label">0:00 / 4:21</span></div>
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
@@ -35,6 +37,7 @@
 const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const timeline=document.getElementById('timeline');
+const timeLabel=document.getElementById('time-label');
 const playButton=document.getElementById('play'),status=document.getElementById('status'),sc=document.getElementById('sc');
 const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
 const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
@@ -222,19 +225,26 @@ function draw(t) {
   const fullCoverage=rendered&&covers(rendered,p);
   const edgeCoverage=t>=recipe.duration/2&&rendered&&edgeRendered&&
     covers(edgeRendered,p)&&covers(rendered,edgeRendered.edgeOutside);
-  // If a worker is late, retain the last complete display. A dark rectangle
-  // would otherwise show through transparent parts of the edge ring.
-  if(fullCoverage||edgeCoverage){
+  // Use projected pixels where they cover the view; otherwise keep each
+  // completed full frame visible while the renderer catches the moving camera.
+  if(rendered){
     ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
-    if(edgeCoverage)drawProjected(edgeFillCanvas,edgeRendered,p,1);
-    if(rendered){
-      const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
-      // The new image provides an opaque base while the older, smaller image
-      // fades away. Fading in the new frame exposed a dark ascent rectangle.
+    const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
+    if(fullCoverage||edgeCoverage){
+      if(edgeCoverage)drawProjected(edgeFillCanvas,edgeRendered,p,1);
       drawProjected(renderCanvas,rendered,p,1);
       if(mix<1)drawProjected(previousCanvas,previous,p,1-mix);
-      else previous=null;
+    }else{
+      // The spiral can outrun a calculated frame. Show each completed frame
+      // at its own camera position until a new projection covers the view.
+      ctx.drawImage(renderCanvas,0,0,800,800);
+      if(mix<1){
+        ctx.globalAlpha=1-mix;
+        ctx.drawImage(previousCanvas,0,0,800,800);
+        ctx.globalAlpha=1;
+      }
     }
+    if(mix>=1)previous=null;
   }
   if(playing&&t>=recipe.duration/2&&rendered&&edgeWorker){
     const future=cameraAt(Math.min(recipe.duration,t+1.1));
@@ -248,7 +258,9 @@ function draw(t) {
     Math.abs(p.iterations-rendered.iterations)>15||p.width!==rendered.width;
   if(change&&!busy&&performance.now()-lastRequest>90)request(p);
   if(!scrubbing)timeline.value=t;
+  timeLabel.textContent=formatTime(t)+' / '+formatTime(recipe.duration);
 }
+function formatTime(t){const n=Math.floor(clamp(t,0,recipe.duration));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
 timeline.addEventListener('input',()=>{
   scrubbing=true;
   position=clamp(Number(timeline.value),0,recipe.duration);
