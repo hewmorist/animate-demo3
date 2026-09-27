@@ -47,7 +47,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r15 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r16 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -384,7 +384,7 @@ timeline.addEventListener('change',()=>{
   if(playing||starting){starting=false;resumeRequested=false;stopProbe();setPlaying(false);widget?.pause()}
   position=target;anchor=target;anchorTime=performance.now();ended=false;
   scrubbing=false;lastCapturedNominal=-Infinity;clearEdge();
-  widget?.seekTo(target*1000);draw(position);updateTimeline(position);
+  widget?.seekTo(target*1000);draw(position);updateTimeline(position);updateMetric(position);
 });
 function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
 function setPlaying(value){playing=value;playButton.textContent=value?'❚❚ Pause':'▶ Play';playButton.disabled=false}
