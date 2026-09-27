@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r6">
+  <meta name="app-revision" content="player2 r7">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -38,12 +38,13 @@ const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261
 const options=new URLSearchParams(location.search);
 const frameMode=options.get('frames');
 const shortBlend=frameMode==='blend';
-const completeFrames=frameMode==='complete'||shortBlend;
+const motionFrames=frameMode==='motion';
+const completeFrames=frameMode==='complete'||shortBlend||motionFrames;
 if(options.get('path')==='straight'){
   recipe.segments.forEach(segment=>delete segment.orbit);
   document.title='Planet Mandelbrot — straight path test';
 }
-if(completeFrames)document.title=shortBlend?'Planet Mandelbrot — finished-frame blend test':'Planet Mandelbrot — complete frames test';
+if(completeFrames)document.title=motionFrames?'Planet Mandelbrot — interpolated motion test':shortBlend?'Planet Mandelbrot — finished-frame blend test':'Planet Mandelbrot — complete frames test';
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const timeline=document.getElementById('timeline');
 const timeLabel=document.getElementById('time-label');
@@ -136,7 +137,7 @@ function compute(p) {
   return pixels;
 }
 function finish(p,pixels) {
-  if(rendered&&(!completeFrames||shortBlend)){
+  if(rendered&&(!completeFrames||shortBlend||motionFrames)){
     previousCanvas.width=renderCanvas.width;previousCanvas.height=renderCanvas.height;
     previousContext.drawImage(renderCanvas,0,0);previous=rendered;blendAt=performance.now();
   }
@@ -165,9 +166,13 @@ try {
 }catch(_){worker=null}
 function request(p) {
   busy=true;lastRequest=performance.now();
-  const job={...p,palette};
+  // The extra border gives a finished image room to move with the camera.
+  // Increase pixel dimensions too, preserving the original pixel scale.
+  const view=motionFrames?{...p,nominalSpan:p.span,nominalWidth:p.width,
+    span:p.span*1.18,width:Math.round(p.width*1.18)}:p;
+  const job={...view,palette};
   if(worker)worker.postMessage(job);
-  else setTimeout(()=>finish(p,compute(job)),0);
+  else setTimeout(()=>finish(view,compute(job)),0);
 }
 function requestEdge(p){
   if(!edgeWorker||edgeBusy||!rendered)return;
@@ -232,14 +237,28 @@ function drawProjected(canvas,source,p,opacity) {
 function draw(t) {
   const p=cameraAt(t);
   if(completeFrames){
-    if(rendered&&(displayedComplete!==rendered||shortBlend&&previous)){
+    if(rendered&&(motionFrames||displayedComplete!==rendered||shortBlend&&previous)){
       ctx.imageSmoothingEnabled=true;
-      ctx.drawImage(renderCanvas,0,0,800,800);
-      if(shortBlend&&previous){
+      if(motionFrames){
+        // Reproject one fully calculated image at the current camera pose.
+        // Stop at its covered boundary while the next image is calculating;
+        // this never exposes a blank or stretched edge.
+        const span=Math.min(p.span,rendered.span);
+        const margin=(rendered.span-span)/2;
+        const view={...p,span,cx:clamp(p.cx,rendered.cx-margin,rendered.cx+margin),
+          cy:clamp(p.cy,rendered.cy-margin,rendered.cy+margin)};
+        const rect=projection(rendered,view);
+        ctx.drawImage(renderCanvas,rect.x,rect.y,rect.size,rect.size);
+      }else ctx.drawImage(renderCanvas,0,0,800,800);
+      if((shortBlend||motionFrames)&&previous){
         const fade=clamp((performance.now()-blendAt)/120,0,1);
         if(fade<1){
           ctx.globalAlpha=1-fade;
-          ctx.drawImage(previousCanvas,0,0,800,800);
+          if(motionFrames){
+            const old=projection(previous,p);
+            if(covers(previous,p))ctx.drawImage(previousCanvas,old.x,old.y,old.size,old.size);
+            else ctx.drawImage(previousCanvas,0,0,800,800);
+          }else ctx.drawImage(previousCanvas,0,0,800,800);
           ctx.globalAlpha=1;
         }else previous=null;
       }
@@ -276,9 +295,9 @@ function draw(t) {
     if(needsEdges&&needsRefresh&&!edgeBusy&&performance.now()-lastEdgeRequest>350)
       requestEdge(future);
   }
-  const change=!rendered||Math.abs(Math.log(p.span/rendered.span))>(playing?.055:1e-5)||
+  const change=!rendered||Math.abs(Math.log(p.span/(rendered.nominalSpan??rendered.span)))>(playing?.055:1e-5)||
     Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
-    Math.abs(p.iterations-rendered.iterations)>15||p.width!==rendered.width;
+    Math.abs(p.iterations-rendered.iterations)>15||p.width!==(rendered.nominalWidth??rendered.width);
   if(change&&!busy&&performance.now()-lastRequest>90)request(p);
   if(!scrubbing)timeline.value=t;
   timeLabel.textContent=formatTime(t)+' / '+formatTime(recipe.duration);
