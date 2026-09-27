@@ -104,10 +104,128 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radiusFrom": 1.2e-9,
-        "radiusTo": 2.4e-9,
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0,
+        "progressTo": 0.06666666666666667,
         "from": 0,
         "to": 120
+      }
+    },
+    {
+      "time": 92.8,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.06666666666666667,
+        "progressTo": 0.13333333333333333,
+        "from": 120,
+        "to": 240
+      }
+    },
+    {
+      "time": 98.6,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.13333333333333333,
+        "progressTo": 0.2,
+        "from": 240,
+        "to": 360
+      }
+    },
+    {
+      "time": 104.4,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.2,
+        "progressTo": 0.26666666666666666,
+        "from": 360,
+        "to": 480
+      }
+    },
+    {
+      "time": 110.2,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.26666666666666666,
+        "progressTo": 0.3333333333333333,
+        "from": 480,
+        "to": 600
       }
     },
     {
@@ -131,10 +249,128 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radiusFrom": 2.4e-9,
-        "radiusTo": 2.4e-9,
-        "from": 120,
-        "to": 240
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.3333333333333333,
+        "progressTo": 0.4,
+        "from": 600,
+        "to": 720
+      }
+    },
+    {
+      "time": 121.8,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.4,
+        "progressTo": 0.4666666666666667,
+        "from": 720,
+        "to": 840
+      }
+    },
+    {
+      "time": 127.6,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.4666666666666667,
+        "progressTo": 0.5333333333333333,
+        "from": 840,
+        "to": 960
+      }
+    },
+    {
+      "time": 133.4,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.5333333333333333,
+        "progressTo": 0.6,
+        "from": 960,
+        "to": 1080
+      }
+    },
+    {
+      "time": 139.2,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.6,
+        "progressTo": 0.6666666666666666,
+        "from": 1080,
+        "to": 1200
       }
     },
     {
@@ -158,10 +394,128 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radiusFrom": 2.4e-9,
-        "radiusTo": 1.2e-9,
-        "from": 240,
-        "to": 360
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.6666666666666666,
+        "progressTo": 0.7333333333333333,
+        "from": 1200,
+        "to": 1320
+      }
+    },
+    {
+      "time": 150.8,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.7333333333333333,
+        "progressTo": 0.8,
+        "from": 1320,
+        "to": 1440
+      }
+    },
+    {
+      "time": 156.6,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.8,
+        "progressTo": 0.8666666666666667,
+        "from": 1440,
+        "to": 1560
+      }
+    },
+    {
+      "time": 162.4,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.8666666666666667,
+        "progressTo": 0.9333333333333333,
+        "from": 1560,
+        "to": 1680
+      }
+    },
+    {
+      "time": 168.2,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "bulge": 1.2e-9,
+        "progressFrom": 0.9333333333333333,
+        "progressTo": 1,
+        "from": 1680,
+        "to": 1800
       }
     },
     {
