@@ -38,7 +38,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r9 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r10 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -56,10 +56,10 @@ const previousCanvas=document.createElement('canvas'),previousContext=previousCa
 const frameCache=new Map(),preparedFrames=[];
 const edgeCanvas=document.createElement('canvas');edgeCanvas.width=800;edgeCanvas.height=800;
 const edgeContext=edgeCanvas.getContext('2d');
-const comparisonCanvas=document.createElement('canvas');comparisonCanvas.width=128;comparisonCanvas.height=128;
+const comparisonCanvas=document.createElement('canvas');comparisonCanvas.width=64;comparisonCanvas.height=64;
 const comparisonContext=comparisonCanvas.getContext('2d',{willReadFrequently:true});
-const descentSamples=new Map(),ascentResults=new Map();
-let lastComparisonBucket=-1,scrubbing=false;
+const descentSamples=[],ascentResults=new Map();
+let scrubbing=false,lastCapturedNominal=-Infinity;
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 const previewTime=Number(new URLSearchParams(location.search).get('previewTime'));
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
@@ -272,23 +272,23 @@ function updateTimeline(t){
   phaseLabel.textContent=(t<recipe.duration/2?'Inward':'Outward')+' · depth '+depth.toFixed(2)+' / 9.00';
 }
 function captureDisplay(){
-  comparisonContext.drawImage(C,0,0,128,128);
-  return comparisonContext.getImageData(0,0,128,128).data;
+  comparisonContext.drawImage(C,0,0,64,64);
+  return comparisonContext.getImageData(0,0,64,64).data;
 }
 function comparePixels(a,b){
   let total=0,outer=0,outerCount=0;
-  for(let y=0;y<128;y++)for(let x=0;x<128;x++){
-    const k=(y*128+x)*4;
+  for(let y=0;y<64;y++)for(let x=0;x<64;x++){
+    const k=(y*64+x)*4;
     const delta=(Math.abs(a[k]-b[k])+Math.abs(a[k+1]-b[k+1])+Math.abs(a[k+2]-b[k+2]))/3;
     total+=delta;
-    if(x<16||x>=112||y<16||y>=112){outer+=delta;outerCount++}
+    if(x<8||x>=56||y<8||y>=56){outer+=delta;outerCount++}
   }
-  return {all:100*total/(128*128*255),edge:100*outer/(outerCount*255)};
+  return {all:100*total/(64*64*255),edge:100*outer/(outerCount*255)};
 }
 function updateMetric(){
   if(!ascentResults.size){
-    metric.textContent=descentSamples.size
-      ?'Reference: '+descentSamples.size+' descent samples. Ascent comparison starts at the midpoint.'
+    metric.textContent=descentSamples.length
+      ?'Reference: '+descentSamples.length+' descent samples. Ascent comparison starts at the midpoint.'
       :'Play the descent to collect reference frames; the matching ascent will be compared here.';
     return;
   }
@@ -296,23 +296,32 @@ function updateMetric(){
   for(const result of ascentResults.values()){all+=result.all;edge+=result.edge;latest=result}
   const count=ascentResults.size;
   metric.textContent='Difference from descent: whole '+(all/count).toFixed(1)+'%, edge '+(edge/count).toFixed(1)+
-    '% · '+count+' matched depths (latest '+latest.all.toFixed(1)+'% / '+latest.edge.toFixed(1)+'%). Lower is better.';
+    '% · '+count+' matched depths (latest '+latest.all.toFixed(1)+'% / '+latest.edge.toFixed(1)+
+    '%, depth gap '+latest.gap.toFixed(2)+' s). Lower is better.';
 }
 function sampleComparison(t){
   if(!playing||scrubbing)return;
   const nominal=t*nominalDuration/recipe.duration,goingIn=nominal<nominalDuration/2;
   const depthTime=goingIn?nominal:nominalDuration-nominal;
-  const bucket=Math.round(depthTime*2);
-  if(bucket<0||bucket>261||Math.abs(depthTime-bucket/2)>.06)return;
-  const key=(goingIn?'in:':'out:')+bucket;
-  if(lastComparisonBucket===key)return;
-  lastComparisonBucket=key;
   if(goingIn){
-    if(!descentSamples.has(bucket))descentSamples.set(bucket,captureDisplay());
-  }else if(descentSamples.has(bucket)&&!ascentResults.has(bucket)){
-    ascentResults.set(bucket,comparePixels(descentSamples.get(bucket),captureDisplay()));
+    if(Math.abs(depthTime-lastCapturedNominal)>=.10){
+      lastCapturedNominal=depthTime;
+      if(!descentSamples.some(sample=>Math.abs(sample.time-depthTime)<.04)){
+        descentSamples.push({time:depthTime,pixels:captureDisplay()});updateMetric();
+      }
+    }
+  }else{
+    const bucket=Math.round(depthTime*2);
+    if(ascentResults.has(bucket)||!descentSamples.length)return;
+    let best=null,gap=Infinity;
+    for(const sample of descentSamples){
+      const distance=Math.abs(sample.time-depthTime);
+      if(distance<gap){best=sample;gap=distance}
+    }
+    if(gap>.08)return;
+    ascentResults.set(bucket,{...comparePixels(best.pixels,captureDisplay()),gap});
+    updateMetric();
   }
-  updateMetric();
 }
 timeline.addEventListener('input',()=>{
   scrubbing=true;
@@ -322,7 +331,7 @@ timeline.addEventListener('change',()=>{
   const target=clamp(Number(timeline.value),0,recipe.duration);
   if(playing||starting){starting=false;resumeRequested=false;stopProbe();setPlaying(false);widget?.pause()}
   position=target;anchor=target;anchorTime=performance.now();ended=false;
-  lastComparisonBucket=-1;scrubbing=false;
+  scrubbing=false;lastCapturedNominal=-Infinity;
   widget?.seekTo(target*1000);draw(position);updateTimeline(position);
 });
 function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
@@ -345,7 +354,7 @@ function observe(ms){
 }
 function requestStart(){
   if(!widgetReady||starting)return;
-  if(ended){widget.seekTo(0);position=0;ended=false;descentSamples.clear();ascentResults.clear();updateMetric()}
+  if(ended){widget.seekTo(0);position=0;ended=false;descentSamples.length=0;lastCapturedNominal=-Infinity;ascentResults.clear();updateMetric()}
   starting=true;resumeRequested=true;status.textContent='';probeStarted=performance.now();
   playButton.textContent='Starting…';
   let retries=0;
