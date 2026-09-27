@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r10">
+  <title>Planet Julia</title>
+  <meta name="app-revision" content="planet-julia r1">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -18,34 +18,36 @@
     #time-label { min-width: 6.5em; text-align: right; color: #b7c1d4; font-size: .8rem; font-variant-numeric: tabular-nums; white-space: nowrap }
     #status { position: fixed; left: 12px; right: 12px; bottom: 28px; margin: 0; text-align: center; font-size: .85rem; color: #ffc0aa }
     #status:empty { display: none }
+    #build-id { position: fixed; right: 12px; bottom: 8px; color: #8d94a5; font-size: 11px; letter-spacing: .02em }
     .soundcloud { position: absolute; left: -10000px; width: 300px; height: 166px; overflow: hidden }
     #sc { width: 300px; height: 166px; border: 0 }
   </style>
 </head>
 <body>
 <main>
-  <canvas id="stage" width="800" height="800" aria-label="Mandelbrot animation"></canvas>
+  <canvas id="stage" width="800" height="800" aria-label="Julia set animation"></canvas>
   <div id="transport"><input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Track position"><span id="time-label">0:00 / 4:21</span></div>
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
+  <small id="build-id">Planet Julia r1 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
 <script>
 'use strict';
-// Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
-const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
+// Embedded from julia-demo.json; the standalone page requires no fetch.
+const recipe={"version":1,"title":"Planet Julia — spiral journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":0.0032,"to":3.2e-06},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-06,"to":3.2e-09},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-06},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-06,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}],"juliaParameter":[-0.7269,0.1889]};
 const options=new URLSearchParams(location.search);
-const frameMode=options.get('frames');
+const frameMode=options.get('frames')||'precache';
 const shortBlend=frameMode==='blend';
 const cacheFrames=frameMode==='precache';
 const motionFrames=frameMode==='motion'||cacheFrames;
 const completeFrames=frameMode==='complete'||shortBlend||motionFrames;
 if(options.get('path')==='straight'){
   recipe.segments.forEach(segment=>delete segment.orbit);
-  document.title='Planet Mandelbrot — straight path test';
+  document.title='Planet Julia — straight path test';
 }
-if(completeFrames)document.title=cacheFrames?'Planet Mandelbrot — ahead-of-time frame test':motionFrames?'Planet Mandelbrot — interpolated motion test':shortBlend?'Planet Mandelbrot — finished-frame blend test':'Planet Mandelbrot — complete frames test';
+if(completeFrames&&!cacheFrames)document.title=motionFrames?'Planet Julia — interpolated motion test':shortBlend?'Planet Julia — finished-frame blend test':'Planet Julia — complete frames test';
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const timeline=document.getElementById('timeline');
 const timeLabel=document.getElementById('time-label');
@@ -87,10 +89,10 @@ function cameraAt(t) {
     cx+=radius*Math.cos(angle);cy+=radius*Math.sin(angle);
   }
   return {cx,cy,span:s.zoom.from*Math.pow(s.zoom.to/s.zoom.from,f),
-    iterations:Math.round(s.iterations.from+(s.iterations.to-s.iterations.from)*f),width:s.quality,seed:s.seed};
+    iterations:Math.round(s.iterations.from+(s.iterations.to-s.iterations.from)*f),width:s.quality,seed:s.seed,juliaParameter:recipe.juliaParameter};
 }
 function compute(p) {
-  const {width:w,cx,cy,span,iterations:max,palette:colors,seed,edgeOutside}=p;
+  const {width:w,cx,cy,span,iterations:max,palette:colors,seed,edgeOutside,juliaParameter}=p;
   const pixels=new Uint8ClampedArray(w*w*4),unit=span/w,phase=(seed%997)*.001;
   // Saturated hue bands gradually replace RGB blends as the camera dives.
   const depth=clamp(Math.log10(3.2/span)/9,0,1),colorMix=clamp((depth-.22)/.62,0,1);
@@ -103,12 +105,11 @@ function compute(p) {
     // dark canvas between a complete frame and its calculated edge ring.
     if(edgeOutside&&Math.abs(cr-edgeOutside.cx)<edgeOutside.span/2-16*unit&&
        Math.abs(ci-edgeOutside.cy)<edgeOutside.span/2-16*unit)continue;
-    const xr=cr-.25,q=xr*xr+ci*ci,inside=q*(q+xr)<=.25*ci*ci||(cr+1)*(cr+1)+ci*ci<=.0625;
-    let zr=0,zi=0,n=0,mag=0;
-    if(!inside)for(;n<max;n++){
+    let zr=cr,zi=ci,n=0,mag=0;
+    for(;n<max;n++){
       const zr2=zr*zr,zi2=zi*zi;mag=zr2+zi2;if(mag>256)break;
-      zi=2*zr*zi+ci;zr=zr2-zi2+cr;
-    }else n=max;
+      zi=2*zr*zi+juliaParameter[1];zr=zr2-zi2+juliaParameter[0];
+    }
     const k=(y*w+x)*4;
     if(n===max){pixels[k]=5;pixels[k+1]=7;pixels[k+2]=17}
     else {
@@ -189,7 +190,6 @@ try {
       const p=e.data.p;
       cached.set(p.cacheIndex,{p,pixels:new Uint8ClampedArray(e.data.pixels)});
       cacheDone++;
-      if(options.get('debug')==='1')status.textContent=`Precomputed ${cacheDone}/${cacheTimes.length} frames`;
       scheduleCache();
     };
     cacheWorker.onerror=()=>{cacheWorker.terminate();cacheWorker=null};
@@ -391,9 +391,6 @@ function draw(t) {
   if(change&&(!cacheDrawn||nearCacheEnd)&&!busy&&performance.now()-lastRequest>90)request(p);
   if(!scrubbing)timeline.value=t;
   timeLabel.textContent=formatTime(t)+' / '+formatTime(recipe.duration);
-  if(cacheFrames&&options.get('debug')==='1'&&
-     (!status.textContent||status.textContent.startsWith('Precomputed')))
-    status.textContent=`Precomputed ${cacheDone}/${cacheTimes.length} frames`;
 }
 function formatTime(t){const n=Math.floor(clamp(t,0,recipe.duration));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
 timeline.addEventListener('input',()=>{
