@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Planet Mandelbrot</title>
-  <meta name="app-revision" content="player2 r1">
+  <meta name="app-revision" content="player2 r2">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -323,7 +323,7 @@ function initAudio(){
 function frame(now){
   if(!playing&&previous)
     draw(position);
-  if(playing){
+  if(playing&&!scrubbing){
     if(widgetReady&&now-lastPoll>200){
       lastPoll=now;widget.getPosition(ms=>{
         if(!playing||!Number.isFinite(ms))return;
