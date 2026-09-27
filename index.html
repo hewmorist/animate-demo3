@@ -3,33 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mandelbrot — Inward Journey</title>
+  <title>Planet Mandelbrot</title>
+  <meta name="app-revision" content="player2 r1">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
     body { margin: 0; min-height: 100vh }
-    main { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: max(18px, calc((100svh - min(92vw,65svh,880px) - 190px)/2)) 18px 40px }
+    main { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: max(18px, calc((100svh - min(92vw,65svh,880px) - 110px)/2)) 18px 40px }
     canvas { display: block; width: min(92vw,65svh,880px); aspect-ratio: 1; flex: none; border-radius: 14px; background: #171923; box-shadow: 0 18px 75px #000a }
     button { margin-top: 24px; min-width: 160px; padding: .8rem 1.35rem; font: 700 1.1rem system-ui,-apple-system,Segoe UI,sans-serif; color: #15171c; background: #f0dcc1; border: 0; border-radius: 13px; cursor: pointer }
     button:disabled { opacity: .6; cursor: wait }
-    #diagnostics { width: min(92vw,880px); margin-top: 12px; font-variant-numeric: tabular-nums; }
-    #timeline-wrap { position: relative; height: 28px; }
-    #timeline { width: 100%; height: 28px; accent-color: #70e8ff; touch-action: none; }
-    #markers { position: absolute; left: 9px; right: 9px; top: 0; height: 28px; pointer-events: none; }
-    .tick { position: absolute; width: 2px; height: 8px; top: 10px; transform: translateX(-50%); background: #aab2c2; opacity: .85; }
-    .tick.section { width: 3px; height: 18px; top: 5px; background: #ffc781; opacity: 1; }
-    .tick.error { width: 4px; height: 13px; top: 7px; background: #777f91; opacity: 1; }
-    #marker-labels { display: flex; justify-content: space-between; color: #949caf; font-size: .72rem; }
-    #marker-key { color: #8993a5; font-size: .7rem; margin-top: 3px; }
-    #readout { display: flex; justify-content: space-between; gap: 12px; font-size: .85rem; color: #c8cfdf; }
-    #metric { margin-top: 6px; min-height: 3.9em; font-size: .83rem; line-height: 1.35; color: #d8e5ec; white-space: pre-line; }
+    #timeline { display: block; width: min(92vw,65svh,880px); height: 24px; margin-top: 16px; accent-color: #70e8ff; touch-action: none }
     #status { position: fixed; left: 12px; right: 12px; bottom: 28px; margin: 0; text-align: center; font-size: .85rem; color: #ffc0aa }
     #status:empty { display: none }
-    #track-test { width: min(92vw,600px); margin-top: 18px; text-align: center }
-    #track-test[hidden] { display: none }
-    #track-test textarea { display: block; width: 100%; height: 76px; margin-top: 8px; padding: 8px; background: #181c28; color: #fff; border: 1px solid #697185; border-radius: 8px }
-    #track-test button { margin-top: 8px; font-size: .95rem }
-    #build-id { position: fixed; right: 12px; bottom: 8px; color: #8d94a5; font-size: 11px; letter-spacing: .02em }
     .soundcloud { position: absolute; left: -10000px; width: 300px; height: 166px; overflow: hidden }
     #sc { width: 300px; height: 166px; border: 0 }
   </style>
@@ -37,41 +23,27 @@
 <body>
 <main>
   <canvas id="stage" width="800" height="800" aria-label="Mandelbrot animation"></canvas>
-  <div id="diagnostics">
-    <div id="timeline-wrap"><input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Timeline scrubber"><div id="markers" aria-hidden="true"></div></div>
-    <div id="marker-labels"><span>Start</span><span id="turn-label">Turn 2:10</span><span>Finish</span></div>
-    <div id="marker-key">Small ticks: 5 seconds · tall ticks: route sections · ascent colors: green lower, red higher difference</div>
-    <div id="readout"><span id="time-label">0:00 / 4:21</span><span id="phase-label">Inward · depth 0.00 / 9.00</span></div>
-    <div id="metric" role="status">Play the descent to collect reference frames; the matching ascent will be compared here.</div>
-  </div>
+  <input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Track position">
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
-  <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r19 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
 <script>
 'use strict';
 // Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
-const recipe={"version":1,"title":"Mandelbrot \u2014 inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0.0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0},{"time":43.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2e-06},"iterations":{"from":600,"to":1500},"quality":352,"transition":0},{"time":87.0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-06,"to":3.2e-09},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0},{"time":130.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-09,"to":3.2e-06},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0},{"time":174.0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-06,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0},{"time":217.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0}],"keyframes":[]};
+const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"bulge":1.2e-9,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}]};
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
-const timeline=document.getElementById('timeline'),markers=document.getElementById('markers'),turnLabel=document.getElementById('turn-label'),timeLabel=document.getElementById('time-label'),phaseLabel=document.getElementById('phase-label'),metric=document.getElementById('metric');
+const timeline=document.getElementById('timeline');
 const playButton=document.getElementById('play'),status=document.getElementById('status'),sc=document.getElementById('sc');
-const testPanel=document.getElementById('track-test'),embedCode=document.getElementById('embed-code'),loadTrack=document.getElementById('load-track');
 const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
 const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
 const previousCanvas=document.createElement('canvas'),previousContext=previousCanvas.getContext('2d');
 const edgeCanvas=document.createElement('canvas');edgeCanvas.width=800;edgeCanvas.height=800;
 const edgeContext=edgeCanvas.getContext('2d');
 const edgeFillCanvas=document.createElement('canvas'),edgeFillContext=edgeFillCanvas.getContext('2d');
-const comparisonCanvas=document.createElement('canvas');comparisonCanvas.width=64;comparisonCanvas.height=64;
-const comparisonContext=comparisonCanvas.getContext('2d',{willReadFrequently:true});
-const descentSamples=[],ascentResults=new Map();
-const errorTicks=[];
-let scrubbing=false,lastCapturedNominal=-Infinity,lastMetricBin=-1;
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
-const previewTime=Number(new URLSearchParams(location.search).get('previewTime'));
+let scrubbing=false;
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
 let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,busy=false,lastRequest=-Infinity,worker=null;
 let edgeWorker=null,edgeBusy=false,edgeRendered=null,edgeRequested=null,lastEdgeRequest=-Infinity,edgeEpoch=0;
@@ -247,8 +219,6 @@ function drawProjected(canvas,source,p,opacity) {
 }
 function draw(t) {
   const p=cameraAt(t);
-  if(Number.isFinite(previewTime)&&previewTime>0&&!playing)
-    status.textContent='Procedural preview';
   const fullCoverage=rendered&&covers(rendered,p);
   const edgeCoverage=t>=recipe.duration/2&&rendered&&edgeRendered&&
     covers(edgeRendered,p)&&covers(rendered,edgeRendered.edgeOutside);
@@ -277,129 +247,18 @@ function draw(t) {
     Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
     Math.abs(p.iterations-rendered.iterations)>15||p.width!==rendered.width;
   if(change&&!busy&&performance.now()-lastRequest>90)request(p);
-  updateTimeline(t);
-}
-function formatTime(t){const n=Math.floor(t);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
-const intervalCount=Math.round((nominalDuration/2)/5),intervalSpan=(nominalDuration/2)/intervalCount;
-function comparisonBin(t){
-  const nominal=clamp(t*nominalDuration/recipe.duration,0,nominalDuration);
-  const outward=nominal<nominalDuration/2?nominalDuration-nominal:nominal;
-  return clamp(Math.floor((outward-nominalDuration/2)/intervalSpan),0,intervalCount-1);
-}
-function buildMarkers(){
-  markers.replaceChildren();errorTicks.length=0;
-  const tick=(time,kind)=>{
-    const el=document.createElement('span');
-    el.className='tick '+kind;el.style.left=(100*time/nominalDuration)+'%';
-    markers.appendChild(el);return el;
-  };
-  for(let t=5;t<nominalDuration;t+=5)tick(t,'');
-  for(const segment of recipe.segments.slice(1))tick(segment.time*nominalDuration/recipe.duration,'section');
-  for(let i=0;i<intervalCount;i++){
-    const center=nominalDuration/2+intervalSpan*(i+.5);
-    errorTicks.push(tick(center,'error'));
-  }
-  turnLabel.textContent='Turn '+formatTime(recipe.duration/2);
-  updateErrorTicks();
-}
-function updateErrorTicks(){
-  const bins=Array.from({length:intervalCount},()=>({sum:0,count:0}));
-  for(const result of ascentResults.values()){
-    const index=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/intervalSpan),0,intervalCount-1);
-    bins[index].sum+=result.all;bins[index].count++;
-  }
-  bins.forEach((bin,i)=>{
-    if(bin.count){
-      const error=bin.sum/bin.count;
-      errorTicks[i].style.background='hsl('+Math.max(0,120-Math.min(120,error*6))+' 100% 55%)';
-    }else errorTicks[i].style.background='#777f91';
-  });
-}
-function updateTimeline(t){
   if(!scrubbing)timeline.value=t;
-  timeline.max=recipe.duration;
-  timeLabel.textContent=formatTime(t)+' / '+formatTime(recipe.duration);
-  const depth=Math.log10(3.2/cameraAt(t).span);
-  phaseLabel.textContent=(t<recipe.duration/2?'Inward':'Outward')+' · depth '+depth.toFixed(2)+' / 9.00';
-  const bin=comparisonBin(t);
-  if(bin!==lastMetricBin){lastMetricBin=bin;updateMetric(t)}
-}
-function captureDisplay(){
-  comparisonContext.drawImage(C,0,0,64,64);
-  return comparisonContext.getImageData(0,0,64,64).data;
-}
-function comparePixels(a,b){
-  let total=0,outer=0,outerCount=0;
-  for(let y=0;y<64;y++)for(let x=0;x<64;x++){
-    const k=(y*64+x)*4;
-    const delta=(Math.abs(a[k]-b[k])+Math.abs(a[k+1]-b[k+1])+Math.abs(a[k+2]-b[k+2]))/3;
-    total+=delta;
-    if(x<8||x>=56||y<8||y>=56){outer+=delta;outerCount++}
-  }
-  return {all:100*total/(64*64*255),edge:100*outer/(outerCount*255)};
-}
-function updateMetric(t=position){
-  const selected=comparisonBin(t);
-  const start=(nominalDuration/2+intervalSpan*selected)*recipe.duration/nominalDuration;
-  const end=(nominalDuration/2+intervalSpan*(selected+1))*recipe.duration/nominalDuration;
-  const label='Matching ascent '+formatTime(start)+'–'+formatTime(end)+': ';
-  if(!ascentResults.size){
-    metric.textContent=label+'awaiting a matched frame.\n'+
-      (descentSamples.length?'Reference: '+descentSamples.length+' descent samples collected.':'Play the descent first to collect reference frames.')+
-      ' RGB difference: 0% means identical.';
-    updateErrorTicks();
-    return;
-  }
-  let all=0,edge=0,gapTotal=0;
-  const bins=Array.from({length:intervalCount},()=>({all:0,edge:0,count:0}));
-  for(const result of ascentResults.values()){
-    all+=result.all;edge+=result.edge;gapTotal+=result.gap;
-    const bin=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/intervalSpan),0,intervalCount-1);
-    bins[bin].all+=result.all;bins[bin].edge+=result.edge;bins[bin].count++;
-  }
-  const count=ascentResults.size;
-  const local=bins[selected],covered=bins.filter(bin=>bin.count).length;
-  metric.textContent=label+(local.count
-    ?'whole '+(local.all/local.count).toFixed(1)+'%, edge '+(local.edge/local.count).toFixed(1)+'% ('+local.count+' pairs).'
-    :'no matched frames yet.')+
-    '\n'+(ended?'Overall sampled run':'Overall so far')+': whole '+(all/count).toFixed(1)+'%, edge '+(edge/count).toFixed(1)+
-    '% · '+covered+'/'+intervalCount+' intervals, '+count+' pairs; mean depth gap '+(gapTotal/count).toFixed(2)+' s. Lower is better.';
-  updateErrorTicks();
-}
-function sampleComparison(t){
-  if(!playing||scrubbing)return;
-  const nominal=t*nominalDuration/recipe.duration,goingIn=nominal<nominalDuration/2;
-  const depthTime=goingIn?nominal:nominalDuration-nominal;
-  if(goingIn){
-    if(Math.abs(depthTime-lastCapturedNominal)>=.10){
-      lastCapturedNominal=depthTime;
-      if(!descentSamples.some(sample=>Math.abs(sample.time-depthTime)<.04)){
-        descentSamples.push({time:depthTime,pixels:captureDisplay()});updateMetric();
-      }
-    }
-  }else{
-    const bucket=Math.round(depthTime*2);
-    if(!descentSamples.length)return;
-    let best=null,gap=Infinity;
-    for(const sample of descentSamples){
-      const distance=Math.abs(sample.time-depthTime);
-      if(distance<gap){best=sample;gap=distance}
-    }
-    if(gap>.20||(ascentResults.has(bucket)&&gap>=ascentResults.get(bucket).gap))return;
-    ascentResults.set(bucket,{...comparePixels(best.pixels,captureDisplay()),gap,ascentNominal:nominalDuration-depthTime});
-    updateMetric();
-  }
 }
 timeline.addEventListener('input',()=>{
   scrubbing=true;
-  updateTimeline(Number(timeline.value));
+  position=clamp(Number(timeline.value),0,recipe.duration);
+  draw(position);
 });
 timeline.addEventListener('change',()=>{
   const target=clamp(Number(timeline.value),0,recipe.duration);
   if(playing||starting){starting=false;resumeRequested=false;stopProbe();setPlaying(false);widget?.pause()}
   position=target;anchor=target;anchorTime=performance.now();ended=false;
-  scrubbing=false;lastCapturedNominal=-Infinity;clearEdge();
-  widget?.seekTo(target*1000);draw(position);updateTimeline(position);updateMetric(position);
+  clearEdge();widget?.seekTo(target*1000);draw(position);scrubbing=false;
 });
 function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
 function setPlaying(value){playing=value;playButton.textContent=value?'❚❚ Pause':'▶ Play';playButton.disabled=false}
@@ -421,7 +280,7 @@ function observe(ms){
 }
 function requestStart(){
   if(!widgetReady||starting)return;
-  if(ended){widget.seekTo(0);position=0;ended=false;clearEdge();descentSamples.length=0;lastCapturedNominal=-Infinity;ascentResults.clear();updateMetric()}
+  if(ended){widget.seekTo(0);position=0;ended=false;clearEdge()}
   starting=true;resumeRequested=true;status.textContent='';probeStarted=performance.now();
   playButton.textContent='Starting…';
   let retries=0;
@@ -444,26 +303,9 @@ playButton.addEventListener('click',()=>{
   if(playing){resumeRequested=false;position=clock();setPlaying(false);draw(position);widget.pause();return}
   requestStart();
 });
-if(new URLSearchParams(location.search).has('testAudio'))testPanel.hidden=false;
-loadTrack.addEventListener('click',()=>{
-  const raw=embedCode.value.trim();
-  const src=raw.match(/<iframe\b[^>]*\bsrc=["']([^"']+)["']/i)?.[1]?.replaceAll('&amp;','&');
-  let target;
-  try{
-    const player=new URL(src);
-    if(player.protocol!=='https:'||player.hostname!=='w.soundcloud.com'||player.pathname!=='/player/')throw Error('player');
-    target=new URL(player.searchParams.get('url'));
-    if(target.protocol!=='https:'||target.hostname!=='api.soundcloud.com'||!/^\/tracks\//.test(target.pathname))throw Error('track');
-  }catch(_){status.textContent='Paste the full iframe code from SoundCloud Share → Embed.';return}
-  if(!widget){status.textContent='SoundCloud player is still loading.';return}
-  starting=false;resumeRequested=false;stopProbe();playing=false;widgetReady=false;ended=false;position=0;anchor=0;clearEdge();
-  playButton.disabled=true;playButton.textContent='Loading track…';status.textContent='';
-  embedCode.value='';
-  widget.load(target.href,{auto_play:false,visual:false,show_comments:false,show_reposts:false,callback:audioReady});
-});
 function audioReady(){
   widgetReady=true;resumeRequested=false;setPlaying(false);status.textContent='';
-  widget.getDuration(ms=>{if(Number.isFinite(ms)&&ms>0){recipe.duration=ms/1000;recipe.segments.forEach((s,i)=>s.time=baseTimes[i]*recipe.duration/nominalDuration);buildMarkers();draw(position);updateMetric(position)}});
+  widget.getDuration(ms=>{if(Number.isFinite(ms)&&ms>0){recipe.duration=ms/1000;recipe.segments.forEach((s,i)=>s.time=baseTimes[i]*recipe.duration/nominalDuration);timeline.max=recipe.duration;draw(position)}});
 }
 function initAudio(){
   if(!window.SC?.Widget){playButton.textContent='Track unavailable';status.textContent='SoundCloud could not load.';return}
@@ -475,7 +317,7 @@ function initAudio(){
     if(starting&&!playing)return;
     if(playing){position=clock();setPlaying(false);draw(position);lastProbe=null}
   });
-  widget.bind(SC.Widget.Events.FINISH,()=>{starting=false;resumeRequested=false;stopProbe();position=recipe.duration;ended=true;setPlaying(false);draw(position);updateMetric(position)});
+  widget.bind(SC.Widget.Events.FINISH,()=>{starting=false;resumeRequested=false;stopProbe();position=recipe.duration;ended=true;setPlaying(false);draw(position)});
   widget.bind(SC.Widget.Events.ERROR,()=>{starting=false;resumeRequested=false;stopProbe();widgetReady=false;playButton.textContent='Track unavailable';playButton.disabled=true;status.textContent='SoundCloud could not play this track.'});
 }
 function frame(now){
@@ -488,13 +330,11 @@ function frame(now){
         const actual=ms/1000;if(Math.abs(actual-clock())>.15){anchor=actual;anchorTime=performance.now()}
       });
     }
-    position=clock();draw(position);sampleComparison(position);
+    position=clock();draw(position);
   }
   requestAnimationFrame(frame);
 }
-buildMarkers();
-if(Number.isFinite(previewTime)&&previewTime>0){position=clamp(previewTime,0,recipe.duration);draw(position)}
-else draw(0);
+draw(0);
 initAudio();requestAnimationFrame(frame);
 </script>
 </body>
