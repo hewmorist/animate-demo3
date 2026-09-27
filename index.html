@@ -29,7 +29,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r3 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r4 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -43,9 +43,10 @@ const testPanel=document.getElementById('track-test'),embedCode=document.getElem
 const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
 const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
 const previousCanvas=document.createElement('canvas'),previousContext=previousCanvas.getContext('2d');
+const frameCache=new Map();
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,busy=false,sent=null,lastRequest=-Infinity,worker=null;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,baseFrame=null,priorBase=null,baseFadeAt=0,busy=false,sent=null,lastRequest=-Infinity,worker=null;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function cameraAt(t) {
   let index=0;for(let i=1;i<recipe.segments.length;i++)if(t>=recipe.segments[i].time)index=i;
@@ -123,7 +124,16 @@ function finish(p,pixels) {
   }
   renderCanvas.width=p.width;renderCanvas.height=p.width;
   const image=renderContext.createImageData(p.width,p.width);image.data.set(pixels);
-  renderContext.putImageData(image,0,0);rendered=p;busy=false;draw(position);
+  renderContext.putImageData(image,0,0);
+  // Keep the first image at each zoom octave. Wider descent images fill the
+  // area revealed later when the camera ascends beyond the latest small image.
+  const band=Math.max(0,Math.floor(Math.log2(3.2/p.span)));
+  if(!frameCache.has(band)){
+    const canvas=document.createElement('canvas');canvas.width=p.width;canvas.height=p.width;
+    canvas.getContext('2d').drawImage(renderCanvas,0,0);
+    frameCache.set(band,{canvas,p});
+  }
+  rendered=p;busy=false;draw(position);
 }
 try {
   const source='const clamp='+clamp.toString()+';const compute='+compute.toString()+
@@ -139,18 +149,45 @@ function request(p) {
   if(worker)worker.postMessage(job);
   else setTimeout(()=>finish(p,compute(job)),0);
 }
+function projection(source,p) {
+  // Place the old image in world coordinates. A smaller source must never be
+  // stretched across the viewport when zooming out.
+  const size=800*source.span/p.span;
+  return {size,x:400+(source.cx-p.cx)*800/p.span-size/2,
+    y:400-(source.cy-p.cy)*800/p.span-size/2};
+}
+function shortfall(rect) {
+  return Math.max(0,rect.x,rect.y,800-rect.x-rect.size,800-rect.y-rect.size);
+}
 function drawProjected(canvas,source,p,opacity) {
-  const n=canvas.width,sourceSize=n*p.span/source.span;
-  const sx=n/2+(p.cx-source.cx)*n/source.span-sourceSize/2;
-  const sy=n/2-(p.cy-source.cy)*n/source.span-sourceSize/2;
-  ctx.globalAlpha=opacity;ctx.imageSmoothingEnabled=true;
-  if(sourceSize<1||sourceSize>n*2||sx>n||sy>n||sx+sourceSize<0||sy+sourceSize<0)
-    ctx.drawImage(canvas,0,0,n,n,0,0,800,800);
-  else ctx.drawImage(canvas,sx,sy,sourceSize,sourceSize,0,0,800,800);
+  const rect=projection(source,p);
+  const alpha=opacity*clamp(1-shortfall(rect)/140,0,1);
+  if(alpha<=0)return;
+  ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(canvas,rect.x,rect.y,rect.size,rect.size);
   ctx.globalAlpha=1;
+}
+function backgroundFor(p) {
+  let best=null,widest=null;
+  for(const frame of frameCache.values()){
+    if(!widest||frame.p.span>widest.p.span)widest=frame;
+    if(frame.p.span<p.span)continue;
+    if(shortfall(projection(frame.p,p))===0&&(!best||frame.p.span<best.p.span))best=frame;
+  }
+  return best||widest;
 }
 function draw(t) {
   const p=cameraAt(t);ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
+  const background=backgroundFor(p);
+  if(background!==baseFrame){
+    priorBase=baseFrame;baseFrame=background;baseFadeAt=performance.now();
+  }
+  if(priorBase){
+    const mix=clamp((performance.now()-baseFadeAt)/300,0,1);
+    drawProjected(priorBase.canvas,priorBase.p,p,1);
+    if(baseFrame)drawProjected(baseFrame.canvas,baseFrame.p,p,mix);
+    if(mix===1)priorBase=null;
+  }else if(baseFrame)drawProjected(baseFrame.canvas,baseFrame.p,p,1);
   if(rendered){
     const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
     if(mix<1)drawProjected(previousCanvas,previous,p,1);
