@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mandelbrot — Inward Journey</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
+    * { box-sizing: border-box }
+    body { margin: 0; min-height: 100vh }
+    main { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px 18px 40px }
+    canvas { display: block; width: min(92vw,72vh,880px); aspect-ratio: 1; border-radius: 14px; background: #171923; box-shadow: 0 18px 75px #000a }
+    button { margin-top: 24px; min-width: 160px; padding: .8rem 1.35rem; font: 700 1.1rem system-ui,-apple-system,Segoe UI,sans-serif; color: #15171c; background: #f0dcc1; border: 0; border-radius: 13px; cursor: pointer }
+    button:disabled { opacity: .6; cursor: wait }
+    #status { position: fixed; left: 12px; right: 12px; bottom: 28px; margin: 0; text-align: center; font-size: .85rem; color: #ffc0aa }
+    #status:empty { display: none }
+    #track-test { width: min(92vw,600px); margin-top: 18px; text-align: center }
+    #track-test[hidden] { display: none }
+    #track-test textarea { display: block; width: 100%; height: 76px; margin-top: 8px; padding: 8px; background: #181c28; color: #fff; border: 1px solid #697185; border-radius: 8px }
+    #track-test button { margin-top: 8px; font-size: .95rem }
+    #build-id { position: fixed; right: 12px; bottom: 8px; color: #8d94a5; font-size: 11px; letter-spacing: .02em }
+    .soundcloud { position: absolute; left: -10000px; width: 300px; height: 166px; overflow: hidden }
+    #sc { width: 300px; height: 166px; border: 0 }
+  </style>
+</head>
+<body>
+<main>
+  <canvas id="stage" width="800" height="800" aria-label="Mandelbrot animation"></canvas>
+  <button id="play" disabled>Loading track…</button>
+  <p id="status" role="status" aria-live="polite"></p>
+  <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
+  <small id="build-id">Mandelbrot demo3 r1 · 2026-09-27</small>
+  <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
+</main>
+<script src="https://w.soundcloud.com/player/api.js"></script>
+<script>
+'use strict';
+// Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
+const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0},{"time":29,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0},{"time":58,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":{"from":[-0.743643887037151,0.13182590420533],"to":[-0.743643885837151,0.13182590420533]},"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0},{"time":87,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":0,"to":600}},{"time":116,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":600,"to":1200}},{"time":145,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":1200,"to":1800}},{"time":174,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":{"from":[-0.743643885837151,0.13182590420533],"to":[-0.743643887037151,0.13182590420533]},"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0},{"time":203,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0},{"time":232,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0}]};
+const C=document.getElementById('stage'),ctx=C.getContext('2d');
+const playButton=document.getElementById('play'),status=document.getElementById('status'),sc=document.getElementById('sc');
+const testPanel=document.getElementById('track-test'),embedCode=document.getElementById('embed-code'),loadTrack=document.getElementById('load-track');
+const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
+const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
+const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
+let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,busy=false,sent=null,lastRequest=-Infinity,worker=null;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function cameraAt(t) {
+  let index=0;for(let i=1;i<recipe.segments.length;i++)if(t>=recipe.segments[i].time)index=i;
+  const s=recipe.segments[index],end=recipe.segments[index+1]?.time??recipe.duration;
+  const f=clamp((t-s.time)/Math.max(.001,end-s.time),0,1);
+  const start=Array.isArray(s.center)?s.center:s.center.from;
+  const finish=Array.isArray(s.center)?s.center:s.center.to;
+  let cx=start[0]+(finish[0]-start[0])*f,cy=start[1]+(finish[1]-start[1])*f;
+  if(s.orbit){
+    const angle=(s.orbit.from+(s.orbit.to-s.orbit.from)*f)*Math.PI/180;
+    cx+=s.orbit.radius*Math.cos(angle);cy+=s.orbit.radius*Math.sin(angle);
+  }
+  return {cx,cy,span:s.zoom.from*Math.pow(s.zoom.to/s.zoom.from,f),
+    iterations:Math.round(s.iterations.from+(s.iterations.to-s.iterations.from)*f),width:s.quality,seed:s.seed};
+}
+function compute(p) {
+  const {width:w,cx,cy,span,iterations:max,palette:colors,seed}=p;
+  const pixels=new Uint8ClampedArray(w*w*4),unit=span/w,phase=(seed%997)*.001;
+  // Saturated hue bands gradually replace RGB blends as the camera dives.
+  const depth=clamp(Math.log10(3.2/span)/9,0,1),colorMix=clamp((depth-.22)/.62,0,1);
+  const hueStops=[.91,.53,.20,.07];
+  for(let y=0;y<w;y++)for(let x=0;x<w;x++){
+    const cr=cx+(x+.5-w/2)*unit,ci=cy-(y+.5-w/2)*unit;
+    const xr=cr-.25,q=xr*xr+ci*ci,inside=q*(q+xr)<=.25*ci*ci||(cr+1)*(cr+1)+ci*ci<=.0625;
+    let zr=0,zi=0,n=0,mag=0;
+    if(!inside)for(;n<max;n++){
+      const zr2=zr*zr,zi2=zi*zi;mag=zr2+zi2;if(mag>256)break;
+      zi=2*zr*zi+ci;zr=zr2-zi2+cr;
+    }else n=max;
+    const k=(y*w+x)*4;
+    if(n===max){pixels[k]=5;pixels[k+1]=7;pixels[k+2]=17}
+    else {
+      const smooth=n+1-Math.log2(Math.max(1,Math.log2(Math.sqrt(mag))));
+      const v=smooth*.042+phase,base=Math.floor(v),fraction=v-base;
+      const a=colors[((base%4)+4)%4],b=colors[(((base+1)%4)+4)%4];
+      const f=fraction*fraction*(3-2*fraction),shade=.66+.34*Math.min(1,n/30);
+      let r=a[0]*(1-f)+b[0]*f,g=a[1]*(1-f)+b[1]*f,bl=a[2]*(1-f)+b[2]*f;
+      const mid=(Math.max(r,g,bl)+Math.min(r,g,bl))/2-18*.9,boost=1+1.8*.9;
+      r=clamp(mid+(r-mid)*boost,0,255);g=clamp(mid+(g-mid)*boost,0,255);bl=clamp(mid+(bl-mid)*boost,0,255);
+      if(colorMix){
+        const first=hueStops[((base%4)+4)%4],last=hueStops[(((base+1)%4)+4)%4];
+        const hue=(first+(((last-first+1.5)%1)-.5)*f+1)%1;
+        const wheel=hue*6,sector=Math.floor(wheel),part=wheel-sector;
+        const value=.72+.28*(.5+.5*Math.cos(smooth*.18)),low=value*.03;
+        const falling=value*(1-.97*part),rising=value*(.03+.97*part);
+        const bright=value*255,dim=low*255,fall=falling*255,rise=rising*255;
+        let rr,gg,bb;
+        switch(sector%6){
+          case 0: rr=bright;gg=rise;bb=dim;break;
+          case 1: rr=fall;gg=bright;bb=dim;break;
+          case 2: rr=dim;gg=bright;bb=rise;break;
+          case 3: rr=dim;gg=fall;bb=bright;break;
+          case 4: rr=rise;gg=dim;bb=bright;break;
+          default: rr=bright;gg=dim;bb=fall;
+        }
+        r+=colorMix*(rr-r);g+=colorMix*(gg-g);bl+=colorMix*(bb-bl);
+      }
+      pixels[k]=shade*r;pixels[k+1]=shade*g;pixels[k+2]=shade*bl;
+    }
+    pixels[k+3]=255;
+  }
+  return pixels;
+}
+function finish(p,pixels) {
+  renderCanvas.width=p.width;renderCanvas.height=p.width;
+  const image=renderContext.createImageData(p.width,p.width);image.data.set(pixels);
+  renderContext.putImageData(image,0,0);rendered=p;busy=false;draw(position);
+}
+try {
+  const source='const clamp='+clamp.toString()+';const compute='+compute.toString()+
+    ';self.onmessage=e=>{const pixels=compute(e.data);self.postMessage({p:e.data,pixels:pixels.buffer},[pixels.buffer])}';
+  const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+  worker=new Worker(url);URL.revokeObjectURL(url);
+  worker.onmessage=e=>finish(e.data.p,new Uint8ClampedArray(e.data.pixels));
+  worker.onerror=()=>{worker.terminate();worker=null;busy=false;draw(position)};
+}catch(_){worker=null}
+function request(p) {
+  busy=true;sent=p;lastRequest=performance.now();
+  const job={...p,palette};
+  if(worker)worker.postMessage(job);
+  else setTimeout(()=>finish(p,compute(job)),0);
+}
+function draw(t) {
+  const p=cameraAt(t);ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
+  if(rendered){
+    const n=renderCanvas.width,sourceSize=n*p.span/rendered.span;
+    const sx=n/2+(p.cx-rendered.cx)*n/rendered.span-sourceSize/2;
+    const sy=n/2-(p.cy-rendered.cy)*n/rendered.span-sourceSize/2;
+    ctx.imageSmoothingEnabled=true;
+    if(sourceSize<1||sourceSize>n*2||sx>n||sy>n||sx+sourceSize<0||sy+sourceSize<0)
+      ctx.drawImage(renderCanvas,0,0,n,n,0,0,800,800);
+    else ctx.drawImage(renderCanvas,sx,sy,sourceSize,sourceSize,0,0,800,800);
+  }
+  const change=!rendered||Math.abs(Math.log(p.span/rendered.span))>(playing?.055:1e-5)||
+    Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
+    Math.abs(p.iterations-rendered.iterations)>15||p.width!==rendered.width;
+  if(change&&!busy&&performance.now()-lastRequest>90)request(p);
+}
+function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
+function setPlaying(value){playing=value;playButton.textContent=value?'❚❚ Pause':'▶ Play';playButton.disabled=false}
+function stopProbe(){if(probeTimer)clearInterval(probeTimer);probeTimer=null;lastProbe=null}
+function activate(ms){
+  if(!starting)return;
+  starting=false;stopProbe();
+  if(Number.isFinite(ms)&&ms>=0)position=clamp(ms/1000,0,recipe.duration);
+  anchor=position;anchorTime=performance.now();status.textContent='';setPlaying(true);draw(position);
+}
+function observe(ms){
+  if((!starting&&!(resumeRequested&&!playing))||!Number.isFinite(ms)||ms<0)return;
+  // A paused track can already be far from zero; only new movement proves playback resumed.
+  if(lastProbe!==null&&ms-lastProbe>=60){
+    if(!starting)starting=true;
+    activate(ms);return;
+  }
+  if(lastProbe===null||ms<lastProbe)lastProbe=ms;
+}
+function requestStart(){
+  if(!widgetReady||starting)return;
+  if(ended){widget.seekTo(0);position=0;ended=false}
+  starting=true;resumeRequested=true;status.textContent='';probeStarted=performance.now();
+  playButton.textContent='Starting…';
+  let retries=0;
+  probeTimer=setInterval(()=>{
+    if(!starting||!widgetReady){stopProbe();return}
+    widget.getPosition(observe);
+    if(/iPhone|iPod/.test(navigator.userAgent)&&performance.now()-probeStarted>900*(retries+1)&&retries<3){retries++;widget.play()}
+    if(performance.now()-probeStarted>5000){starting=false;resumeRequested=false;stopProbe();setPlaying(false);status.textContent='SoundCloud did not start. Tap Play again.'}
+  },180);
+  widget.play();
+}
+playButton.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch'&&/iPhone|iPod/.test(navigator.userAgent)&&widgetReady&&!playing&&!starting){
+    gestureStarted=true;requestStart();
+  }else gestureStarted=false;
+});
+playButton.addEventListener('click',()=>{
+  if(gestureStarted){gestureStarted=false;if(widgetReady&&!playing)widget.play();return}
+  if(!widgetReady)return;
+  if(playing){resumeRequested=false;position=clock();setPlaying(false);draw(position);widget.pause();return}
+  requestStart();
+});
+if(new URLSearchParams(location.search).has('testAudio'))testPanel.hidden=false;
+loadTrack.addEventListener('click',()=>{
+  const raw=embedCode.value.trim();
+  const src=raw.match(/<iframe\b[^>]*\bsrc=["']([^"']+)["']/i)?.[1]?.replaceAll('&amp;','&');
+  let target;
+  try{
+    const player=new URL(src);
+    if(player.protocol!=='https:'||player.hostname!=='w.soundcloud.com'||player.pathname!=='/player/')throw Error('player');
+    target=new URL(player.searchParams.get('url'));
+    if(target.protocol!=='https:'||target.hostname!=='api.soundcloud.com'||!/^\/tracks\//.test(target.pathname))throw Error('track');
+  }catch(_){status.textContent='Paste the full iframe code from SoundCloud Share → Embed.';return}
+  if(!widget){status.textContent='SoundCloud player is still loading.';return}
+  starting=false;resumeRequested=false;stopProbe();playing=false;widgetReady=false;ended=false;position=0;anchor=0;
+  playButton.disabled=true;playButton.textContent='Loading track…';status.textContent='';
+  embedCode.value='';
+  widget.load(target.href,{auto_play:false,visual:false,show_comments:false,show_reposts:false,callback:audioReady});
+});
+function audioReady(){
+  widgetReady=true;resumeRequested=false;setPlaying(false);status.textContent='';
+  widget.getDuration(ms=>{if(Number.isFinite(ms)&&ms>0){recipe.duration=ms/1000;recipe.segments.forEach((s,i)=>s.time=baseTimes[i]*recipe.duration/nominalDuration);draw(position)}});
+}
+function initAudio(){
+  if(!window.SC?.Widget){playButton.textContent='Track unavailable';status.textContent='SoundCloud could not load.';return}
+  sc.src='https://w.soundcloud.com/player/?url='+encodeURIComponent(recipe.soundcloud)+'&auto_play=false&visual=false&show_comments=false&show_reposts=false';
+  widget=SC.Widget(sc);
+  widget.bind(SC.Widget.Events.READY,audioReady);
+  widget.bind(SC.Widget.Events.PLAY_PROGRESS,e=>observe(e?.currentPosition));
+  widget.bind(SC.Widget.Events.PAUSE,()=>{
+    if(starting&&!playing)return;
+    if(playing){position=clock();setPlaying(false);draw(position);lastProbe=null}
+  });
+  widget.bind(SC.Widget.Events.FINISH,()=>{starting=false;resumeRequested=false;stopProbe();position=recipe.duration;ended=true;setPlaying(false);draw(position)});
+  widget.bind(SC.Widget.Events.ERROR,()=>{starting=false;resumeRequested=false;stopProbe();widgetReady=false;playButton.textContent='Track unavailable';playButton.disabled=true;status.textContent='SoundCloud could not play this track.'});
+}
+function frame(now){
+  if(playing){
+    if(widgetReady&&now-lastPoll>200){
+      lastPoll=now;widget.getPosition(ms=>{
+        if(!playing||!Number.isFinite(ms))return;
+        const actual=ms/1000;if(Math.abs(actual-clock())>.15){anchor=actual;anchorTime=performance.now()}
+      });
+    }
+    position=clock();draw(position);
+  }
+  requestAnimationFrame(frame);
+}
+draw(0);initAudio();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
