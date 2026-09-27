@@ -38,7 +38,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r10 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r11 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -292,12 +292,12 @@ function updateMetric(){
       :'Play the descent to collect reference frames; the matching ascent will be compared here.';
     return;
   }
-  let all=0,edge=0,latest=null;
-  for(const result of ascentResults.values()){all+=result.all;edge+=result.edge;latest=result}
+  let all=0,edge=0,gapTotal=0,latest=null;
+  for(const result of ascentResults.values()){all+=result.all;edge+=result.edge;gapTotal+=result.gap;latest=result}
   const count=ascentResults.size;
   metric.textContent='Difference from descent: whole '+(all/count).toFixed(1)+'%, edge '+(edge/count).toFixed(1)+
-    '% · '+count+' matched depths (latest '+latest.all.toFixed(1)+'% / '+latest.edge.toFixed(1)+
-    '%, depth gap '+latest.gap.toFixed(2)+' s). Lower is better.';
+    '% · '+count+' matched depths (average gap '+(gapTotal/count).toFixed(2)+
+    ' s; latest '+latest.all.toFixed(1)+'% / '+latest.edge.toFixed(1)+'%). Lower is better.';
 }
 function sampleComparison(t){
   if(!playing||scrubbing)return;
@@ -312,13 +312,13 @@ function sampleComparison(t){
     }
   }else{
     const bucket=Math.round(depthTime*2);
-    if(ascentResults.has(bucket)||!descentSamples.length)return;
+    if(!descentSamples.length)return;
     let best=null,gap=Infinity;
     for(const sample of descentSamples){
       const distance=Math.abs(sample.time-depthTime);
       if(distance<gap){best=sample;gap=distance}
     }
-    if(gap>.08)return;
+    if(gap>.20||(ascentResults.has(bucket)&&gap>=ascentResults.get(bucket).gap))return;
     ascentResults.set(bucket,{...comparePixels(best.pixels,captureDisplay()),gap});
     updateMetric();
   }
