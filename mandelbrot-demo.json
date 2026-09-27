@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "title": "Mandelbrot — inward journey",
+  "duration": 261,
+  "soundcloud": "https://soundcloud.com/hewmorist/mandelbrot-techno",
+  "segments": [
+    {
+      "time": 0,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2,
+        "to": 0.0032
+      },
+      "iterations": {
+        "from": 120,
+        "to": 600
+      },
+      "quality": 384,
+      "transition": 0
+    },
+    {
+      "time": 29,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 0.0032,
+        "to": 0.0000032
+      },
+      "iterations": {
+        "from": 600,
+        "to": 1500
+      },
+      "quality": 352,
+      "transition": 0
+    },
+    {
+      "time": 58,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": {
+        "from": [
+          -0.743643887037151,
+          0.13182590420533
+        ],
+        "to": [
+          -0.743643885837151,
+          0.13182590420533
+        ]
+      },
+      "zoom": {
+        "from": 0.0000032,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 1500,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0
+    },
+    {
+      "time": 87,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "from": 0,
+        "to": 600
+      }
+    },
+    {
+      "time": 116,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "from": 600,
+        "to": 1200
+      }
+    },
+    {
+      "time": 145,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 3.2e-9
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 3000
+      },
+      "quality": 320,
+      "transition": 0,
+      "orbit": {
+        "radius": 1.2e-9,
+        "from": 1200,
+        "to": 1800
+      }
+    },
+    {
+      "time": 174,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": {
+        "from": [
+          -0.743643885837151,
+          0.13182590420533
+        ],
+        "to": [
+          -0.743643887037151,
+          0.13182590420533
+        ]
+      },
+      "zoom": {
+        "from": 3.2e-9,
+        "to": 0.0000032
+      },
+      "iterations": {
+        "from": 3000,
+        "to": 1500
+      },
+      "quality": 320,
+      "transition": 0
+    },
+    {
+      "time": 203,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 0.0000032,
+        "to": 0.0032
+      },
+      "iterations": {
+        "from": 1500,
+        "to": 600
+      },
+      "quality": 352,
+      "transition": 0
+    },
+    {
+      "time": 232,
+      "effect": "procedural",
+      "generator": "mandelbrot",
+      "seed": 219,
+      "palette": "neon",
+      "center": [
+        -0.743643887037151,
+        0.13182590420533
+      ],
+      "zoom": {
+        "from": 0.0032,
+        "to": 3.2
+      },
+      "iterations": {
+        "from": 600,
+        "to": 120
+      },
+      "quality": 384,
+      "transition": 0
+    }
+  ]
+}
