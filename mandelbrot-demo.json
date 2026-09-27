@@ -104,9 +104,10 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radius": 1.2e-9,
+        "radiusFrom": 1.2e-9,
+        "radiusTo": 2.4e-9,
         "from": 0,
-        "to": 600
+        "to": 120
       }
     },
     {
@@ -130,9 +131,10 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radius": 1.2e-9,
-        "from": 600,
-        "to": 1200
+        "radiusFrom": 2.4e-9,
+        "radiusTo": 2.4e-9,
+        "from": 120,
+        "to": 240
       }
     },
     {
@@ -156,9 +158,10 @@
       "quality": 320,
       "transition": 0,
       "orbit": {
-        "radius": 1.2e-9,
-        "from": 1200,
-        "to": 1800
+        "radiusFrom": 2.4e-9,
+        "radiusTo": 1.2e-9,
+        "from": 240,
+        "to": 360
       }
     },
     {
