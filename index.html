@@ -47,7 +47,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r13 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r14 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -274,11 +274,11 @@ function draw(t) {
   updateTimeline(t);
 }
 function formatTime(t){const n=Math.floor(t);return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
-const intervalCount=Math.ceil((nominalDuration/2)/5);
+const intervalCount=Math.round((nominalDuration/2)/5),intervalSpan=(nominalDuration/2)/intervalCount;
 function comparisonBin(t){
   const nominal=clamp(t*nominalDuration/recipe.duration,0,nominalDuration);
   const outward=nominal<nominalDuration/2?nominalDuration-nominal:nominal;
-  return clamp(Math.floor((outward-nominalDuration/2)/5),0,intervalCount-1);
+  return clamp(Math.floor((outward-nominalDuration/2)/intervalSpan),0,intervalCount-1);
 }
 function buildMarkers(){
   markers.replaceChildren();errorTicks.length=0;
@@ -290,7 +290,7 @@ function buildMarkers(){
   for(let t=5;t<nominalDuration;t+=5)tick(t,'');
   for(const segment of recipe.segments.slice(1))tick(segment.time*nominalDuration/recipe.duration,'section');
   for(let i=0;i<intervalCount;i++){
-    const center=Math.min(nominalDuration,nominalDuration/2+5*i+2.5);
+    const center=nominalDuration/2+intervalSpan*(i+.5);
     errorTicks.push(tick(center,'error'));
   }
   turnLabel.textContent='Turn '+formatTime(recipe.duration/2);
@@ -299,7 +299,7 @@ function buildMarkers(){
 function updateErrorTicks(){
   const bins=Array.from({length:intervalCount},()=>({sum:0,count:0}));
   for(const result of ascentResults.values()){
-    const index=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/5),0,intervalCount-1);
+    const index=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/intervalSpan),0,intervalCount-1);
     bins[index].sum+=result.all;bins[index].count++;
   }
   bins.forEach((bin,i)=>{
@@ -334,8 +334,8 @@ function comparePixels(a,b){
 }
 function updateMetric(t=position){
   const selected=comparisonBin(t);
-  const start=(nominalDuration/2+5*selected)*recipe.duration/nominalDuration;
-  const end=Math.min(nominalDuration,nominalDuration/2+5*(selected+1))*recipe.duration/nominalDuration;
+  const start=(nominalDuration/2+intervalSpan*selected)*recipe.duration/nominalDuration;
+  const end=(nominalDuration/2+intervalSpan*(selected+1))*recipe.duration/nominalDuration;
   const label='Matching ascent '+formatTime(start)+'–'+formatTime(end)+': ';
   if(!ascentResults.size){
     metric.textContent=label+'awaiting a matched frame.\n'+
@@ -348,7 +348,7 @@ function updateMetric(t=position){
   const bins=Array.from({length:intervalCount},()=>({all:0,edge:0,count:0}));
   for(const result of ascentResults.values()){
     all+=result.all;edge+=result.edge;gapTotal+=result.gap;
-    const bin=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/5),0,intervalCount-1);
+    const bin=clamp(Math.floor((result.ascentNominal-nominalDuration/2)/intervalSpan),0,intervalCount-1);
     bins[bin].all+=result.all;bins[bin].edge+=result.edge;bins[bin].count++;
   }
   const count=ascentResults.size;
