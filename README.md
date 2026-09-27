@@ -9,3 +9,7 @@ The track is [Planet Mandelbrot (Animation)](https://soundcloud.com/hewmorist/ma
 ## Straight-path comparison
 
 Open the Pages URL with `?path=straight` to remove the camera orbit while preserving the same zoom schedule, render quality, and audio. The ordinary URL retains the full spiral and circle. This is a controlled test of whether sideways camera motion causes the blur and glitches seen around 0:27. The comparison option is in the HTML only; `mandelbrot-demo.json` remains the full flight.
+
+## Complete-frame comparison
+
+Open the Pages URL with `?frames=complete` to display only finished Mandelbrot renders. It holds each full frame until the next worker result and never projects or crossfades an intermediate image. The ordinary URL retains smooth projected motion. Compare the two spiral modes around 0:27–0:37 for sharpness versus choppiness. The option can be combined with `path=straight` if needed.
