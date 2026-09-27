@@ -1,7 +1,7 @@
-# Mandelbrot high-resolution demo
+# Planet Mandelbrot — player2
 
-Experimental higher-detail variant of [animate-demo2](https://github.com/hewmorist/animate-demo2). The animation and SoundCloud playback are inherited from r14, including iPhone first-tap and pause/resume handling. `index.html` embeds the same recipe as `mandelbrot-demo.json`, so the page runs as a standalone static file.
+This branch combines the latest renderer and SoundCloud playback handling with the full flight: spiral descent, one fast enlarged circle at maximum depth, and spiral ascent. The standalone `index.html` embeds the route from `mandelbrot-demo.json` and needs no JSON fetch.
 
-The procedural renderer now computes at 320–384 pixels per side (previously 192–256), then displays the result on the 800×800 canvas. This is roughly 2.25–2.8× the pixels per render, so some devices may update the detail less frequently. This is a real-time experiment, not the offline supersampled rendering used by Wikipedia’s Mandelbrot GIF.
+The page shows a canvas, timeline scrubber, and Play/Pause button. Drag the scrubber to preview a position; releasing it seeks the SoundCloud track and pauses playback until Play is pressed. The player calculates fractal pixels in browser workers, including the newly exposed edges during ascent.
 
-The Play button uses the public SoundCloud track [Planet Mandelbrot (Animation)](https://soundcloud.com/hewmorist/mandelbrot-techno). Add `?testAudio=1` to the page URL to try a private SoundCloud embed during development.
+The track is [Planet Mandelbrot (Animation)](https://soundcloud.com/hewmorist/mandelbrot-techno). GitHub Pages can be switched to this `player2` branch for device testing. The app revision is in the HTML `app-revision` meta tag.
