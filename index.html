@@ -47,7 +47,7 @@
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
   <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 flight4 r14 · 2026-09-27</small>
+  <small id="build-id">Mandelbrot demo3 flight4 r15 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -62,9 +62,9 @@ const testPanel=document.getElementById('track-test'),embedCode=document.getElem
 const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
 const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
 const previousCanvas=document.createElement('canvas'),previousContext=previousCanvas.getContext('2d');
-const frameCache=new Map(),preparedFrames=[];
 const edgeCanvas=document.createElement('canvas');edgeCanvas.width=800;edgeCanvas.height=800;
 const edgeContext=edgeCanvas.getContext('2d');
+const edgeFillCanvas=document.createElement('canvas'),edgeFillContext=edgeFillCanvas.getContext('2d');
 const comparisonCanvas=document.createElement('canvas');comparisonCanvas.width=64;comparisonCanvas.height=64;
 const comparisonContext=comparisonCanvas.getContext('2d',{willReadFrequently:true});
 const descentSamples=[],ascentResults=new Map();
@@ -73,7 +73,8 @@ let scrubbing=false,lastCapturedNominal=-Infinity,lastMetricBin=-1;
 const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
 const previewTime=Number(new URLSearchParams(location.search).get('previewTime'));
 let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,baseFrame=null,priorBase=null,baseFadeAt=0,busy=false,sent=null,lastRequest=-Infinity,worker=null;
+let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,previous=null,blendAt=0,busy=false,lastRequest=-Infinity,worker=null;
+let edgeWorker=null,edgeBusy=false,edgeRendered=null,edgeRequested=null,lastEdgeRequest=-Infinity,edgeEpoch=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function cameraAt(t) {
   let index=0;for(let i=1;i<recipe.segments.length;i++)if(t>=recipe.segments[i].time)index=i;
@@ -97,13 +98,17 @@ function cameraAt(t) {
     iterations:Math.round(s.iterations.from+(s.iterations.to-s.iterations.from)*f),width:s.quality,seed:s.seed};
 }
 function compute(p) {
-  const {width:w,cx,cy,span,iterations:max,palette:colors,seed}=p;
+  const {width:w,cx,cy,span,iterations:max,palette:colors,seed,edgeOutside}=p;
   const pixels=new Uint8ClampedArray(w*w*4),unit=span/w,phase=(seed%997)*.001;
   // Saturated hue bands gradually replace RGB blends as the camera dives.
   const depth=clamp(Math.log10(3.2/span)/9,0,1),colorMix=clamp((depth-.22)/.62,0,1);
   const hueStops=[.91,.53,.20,.07];
   for(let y=0;y<w;y++)for(let x=0;x<w;x++){
     const cr=cx+(x+.5-w/2)*unit,ci=cy-(y+.5-w/2)*unit;
+    // Transparent where the newest complete render already provides pixels.
+    // Every opaque edge pixel is calculated from the fractal equation.
+    if(edgeOutside&&Math.abs(cr-edgeOutside.cx)<edgeOutside.span/2-unit&&
+       Math.abs(ci-edgeOutside.cy)<edgeOutside.span/2-unit)continue;
     const xr=cr-.25,q=xr*xr+ci*ci,inside=q*(q+xr)<=.25*ci*ci||(cr+1)*(cr+1)+ci*ci<=.0625;
     let zr=0,zi=0,n=0,mag=0;
     if(!inside)for(;n<max;n++){
@@ -152,29 +157,37 @@ function finish(p,pixels) {
   renderCanvas.width=p.width;renderCanvas.height=p.width;
   const image=renderContext.createImageData(p.width,p.width);image.data.set(pixels);
   renderContext.putImageData(image,0,0);
-  // Keep the first image at each zoom octave. Wider descent images fill the
-  // area revealed later when the camera ascends beyond the latest small image.
-  const band=Math.max(0,Math.floor(Math.log2(3.2/p.span)));
-  if(!frameCache.has(band)){
-    const canvas=document.createElement('canvas');canvas.width=p.width;canvas.height=p.width;
-    canvas.getContext('2d').drawImage(renderCanvas,0,0);
-    frameCache.set(band,{canvas,p});
-  }
   rendered=p;busy=false;draw(position);
 }
 try {
   const source='const clamp='+clamp.toString()+';const compute='+compute.toString()+
     ';self.onmessage=e=>{const pixels=compute(e.data);self.postMessage({p:e.data,pixels:pixels.buffer},[pixels.buffer])}';
   const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
-  worker=new Worker(url);URL.revokeObjectURL(url);
+  worker=new Worker(url);edgeWorker=new Worker(url);URL.revokeObjectURL(url);
   worker.onmessage=e=>finish(e.data.p,new Uint8ClampedArray(e.data.pixels));
   worker.onerror=()=>{worker.terminate();worker=null;busy=false;draw(position)};
+  edgeWorker.onmessage=e=>{
+    const p=e.data.p;edgeBusy=false;
+    if(p.edgeEpoch!==edgeEpoch)return;
+    edgeFillCanvas.width=p.width;edgeFillCanvas.height=p.width;
+    const image=edgeFillContext.createImageData(p.width,p.width);
+    image.data.set(new Uint8ClampedArray(e.data.pixels));
+    edgeFillContext.putImageData(image,0,0);
+    edgeRendered=p;draw(position);
+  };
+  edgeWorker.onerror=()=>{edgeWorker.terminate();edgeWorker=null;edgeBusy=false};
 }catch(_){worker=null}
 function request(p) {
-  busy=true;sent=p;lastRequest=performance.now();
+  busy=true;lastRequest=performance.now();
   const job={...p,palette};
   if(worker)worker.postMessage(job);
   else setTimeout(()=>finish(p,compute(job)),0);
+}
+function requestEdge(p){
+  if(!edgeWorker||edgeBusy||!rendered)return;
+  edgeBusy=true;lastEdgeRequest=performance.now();
+  edgeRequested={...p,edgeOutside:rendered,edgeEpoch};
+  edgeWorker.postMessage({...edgeRequested,palette});
 }
 function projection(source,p) {
   // Place the old image in world coordinates. A smaller source must never be
@@ -183,9 +196,7 @@ function projection(source,p) {
   return {size,x:400+(source.cx-p.cx)*800/p.span-size/2,
     y:400-(source.cy-p.cy)*800/p.span-size/2};
 }
-function shortfall(rect) {
-  return Math.max(0,rect.x,rect.y,800-rect.x-rect.size,800-rect.y-rect.size);
-}
+function clearEdge(){edgeEpoch++;edgeRendered=null;edgeRequested=null;lastEdgeRequest=-Infinity}
 function drawProjected(canvas,source,p,opacity) {
   const rect=projection(source,p);
   if(opacity<=0||rect.size<1||rect.x>=800||rect.y>=800||
@@ -198,8 +209,7 @@ function drawProjected(canvas,source,p,opacity) {
     ctx.drawImage(canvas,rect.x,rect.y,rect.size,rect.size);
     ctx.globalAlpha=1;return;
   }
-  // Retain the sharp center of the latest render. Only soften its exposed
-  // boundary against a wider cached view, instead of fading the whole image.
+  // Soften only the join against newly calculated edge pixels.
   edgeContext.clearRect(0,0,800,800);edgeContext.imageSmoothingEnabled=true;
   edgeContext.drawImage(canvas,rect.x,rect.y,rect.size,rect.size);
   edgeContext.globalCompositeOperation='destination-out';
@@ -229,43 +239,24 @@ function drawProjected(canvas,source,p,opacity) {
   edgeContext.globalCompositeOperation='source-over';
   ctx.globalAlpha=opacity;ctx.drawImage(edgeCanvas,0,0);ctx.globalAlpha=1;
 }
-function backgroundFor(p,t) {
-  const nominalTime=t*nominalDuration/recipe.duration;
-  if(nominalTime>=184&&nominalTime<=196){
-    let prepared=null;
-    for(const frame of preparedFrames){
-      if(shortfall(projection(frame.p,p))===0&&
-         (!prepared||frame.p.span<prepared.p.span))prepared=frame;
-    }
-    if(prepared)return prepared;
-  }
-  let best=null,widest=null;
-  for(const frame of frameCache.values()){
-    if(!widest||frame.p.span>widest.p.span)widest=frame;
-    if(frame.p.span<p.span)continue;
-    if(shortfall(projection(frame.p,p))===0&&(!best||frame.p.span<best.p.span))best=frame;
-  }
-  return best||widest;
-}
 function draw(t) {
   const p=cameraAt(t);ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
-  const background=backgroundFor(p,t);
   if(Number.isFinite(previewTime)&&previewTime>0&&!playing)
-    status.textContent=background?.prepared?'Prepared frame preview':'Procedural preview';
-  if(background!==baseFrame){
-    priorBase=baseFrame;baseFrame=background;baseFadeAt=performance.now();
-  }
-  if(priorBase){
-    const mix=clamp((performance.now()-baseFadeAt)/300,0,1);
-    drawProjected(priorBase.canvas,priorBase.p,p,1);
-    if(baseFrame)drawProjected(baseFrame.canvas,baseFrame.p,p,mix);
-    if(mix===1)priorBase=null;
-  }else if(baseFrame)drawProjected(baseFrame.canvas,baseFrame.p,p,1);
-  if(rendered&&!background?.prepared){
+    status.textContent='Procedural preview';
+  if(t>=recipe.duration/2&&edgeRendered)
+    drawProjected(edgeFillCanvas,edgeRendered,p,1);
+  if(rendered){
     const mix=previous?clamp((performance.now()-blendAt)/300,0,1):1;
     if(mix<1)drawProjected(previousCanvas,previous,p,1);
     else previous=null;
     drawProjected(renderCanvas,rendered,p,mix);
+  }
+  if(playing&&t>=recipe.duration/2&&rendered&&edgeWorker){
+    const future=cameraAt(Math.min(recipe.duration,t+1.1));
+    const needsEdges=future.span>rendered.span*1.06;
+    const needsRefresh=!edgeRequested||future.span>edgeRequested.span*1.12;
+    if(needsEdges&&needsRefresh&&!edgeBusy&&performance.now()-lastEdgeRequest>350)
+      requestEdge(future);
   }
   const change=!rendered||Math.abs(Math.log(p.span/rendered.span))>(playing?.055:1e-5)||
     Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
@@ -392,7 +383,7 @@ timeline.addEventListener('change',()=>{
   const target=clamp(Number(timeline.value),0,recipe.duration);
   if(playing||starting){starting=false;resumeRequested=false;stopProbe();setPlaying(false);widget?.pause()}
   position=target;anchor=target;anchorTime=performance.now();ended=false;
-  scrubbing=false;lastCapturedNominal=-Infinity;
+  scrubbing=false;lastCapturedNominal=-Infinity;clearEdge();
   widget?.seekTo(target*1000);draw(position);updateTimeline(position);
 });
 function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
@@ -415,7 +406,7 @@ function observe(ms){
 }
 function requestStart(){
   if(!widgetReady||starting)return;
-  if(ended){widget.seekTo(0);position=0;ended=false;descentSamples.length=0;lastCapturedNominal=-Infinity;ascentResults.clear();updateMetric()}
+  if(ended){widget.seekTo(0);position=0;ended=false;clearEdge();descentSamples.length=0;lastCapturedNominal=-Infinity;ascentResults.clear();updateMetric()}
   starting=true;resumeRequested=true;status.textContent='';probeStarted=performance.now();
   playButton.textContent='Starting…';
   let retries=0;
@@ -450,7 +441,7 @@ loadTrack.addEventListener('click',()=>{
     if(target.protocol!=='https:'||target.hostname!=='api.soundcloud.com'||!/^\/tracks\//.test(target.pathname))throw Error('track');
   }catch(_){status.textContent='Paste the full iframe code from SoundCloud Share → Embed.';return}
   if(!widget){status.textContent='SoundCloud player is still loading.';return}
-  starting=false;resumeRequested=false;stopProbe();playing=false;widgetReady=false;ended=false;position=0;anchor=0;
+  starting=false;resumeRequested=false;stopProbe();playing=false;widgetReady=false;ended=false;position=0;anchor=0;clearEdge();
   playButton.disabled=true;playButton.textContent='Loading track…';status.textContent='';
   embedCode.value='';
   widget.load(target.href,{auto_play:false,visual:false,show_comments:false,show_reposts:false,callback:audioReady});
@@ -473,7 +464,7 @@ function initAudio(){
   widget.bind(SC.Widget.Events.ERROR,()=>{starting=false;resumeRequested=false;stopProbe();widgetReady=false;playButton.textContent='Track unavailable';playButton.disabled=true;status.textContent='SoundCloud could not play this track.'});
 }
 function frame(now){
-  if(!playing&&(priorBase||previous))
+  if(!playing&&previous)
     draw(position);
   if(playing){
     if(widgetReady&&now-lastPoll>200){
@@ -485,14 +476,6 @@ function frame(now){
     position=clock();draw(position);sampleComparison(position);
   }
   requestAnimationFrame(frame);
-}
-for(const spec of recipe.keyframes||[]){
-  const img=new Image();img.decoding='async';
-  img.onload=()=>{
-    preparedFrames.push({canvas:img,p:{cx:spec.cx,cy:spec.cy,span:spec.span},prepared:true});
-    if(!playing)draw(position);
-  };
-  img.src=spec.src;
 }
 buildMarkers();
 if(Number.isFinite(previewTime)&&previewTime>0){position=clamp(previewTime,0,recipe.duration);draw(position)}
