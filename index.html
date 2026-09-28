@@ -1,238 +1,31 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Mandelbrot — Inward Journey</title>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
-    * { box-sizing: border-box }
-    body { margin: 0; min-height: 100vh }
-    main { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px 18px 40px }
-    canvas { display: block; width: min(92vw,72vh,880px); aspect-ratio: 1; border-radius: 14px; background: #171923; box-shadow: 0 18px 75px #000a }
-    button { margin-top: 24px; min-width: 160px; padding: .8rem 1.35rem; font: 700 1.1rem system-ui,-apple-system,Segoe UI,sans-serif; color: #15171c; background: #f0dcc1; border: 0; border-radius: 13px; cursor: pointer }
-    button:disabled { opacity: .6; cursor: wait }
-    #status { position: fixed; left: 12px; right: 12px; bottom: 28px; margin: 0; text-align: center; font-size: .85rem; color: #ffc0aa }
-    #status:empty { display: none }
-    #track-test { width: min(92vw,600px); margin-top: 18px; text-align: center }
-    #track-test[hidden] { display: none }
-    #track-test textarea { display: block; width: 100%; height: 76px; margin-top: 8px; padding: 8px; background: #181c28; color: #fff; border: 1px solid #697185; border-radius: 8px }
-    #track-test button { margin-top: 8px; font-size: .95rem }
-    #build-id { position: fixed; right: 12px; bottom: 8px; color: #8d94a5; font-size: 11px; letter-spacing: .02em }
-    .soundcloud { position: absolute; left: -10000px; width: 300px; height: 166px; overflow: hidden }
-    #sc { width: 300px; height: 166px; border: 0 }
-  </style>
-</head>
-<body>
-<main>
-  <canvas id="stage" width="800" height="800" aria-label="Mandelbrot animation"></canvas>
-  <button id="play" disabled>Loading track…</button>
-  <p id="status" role="status" aria-live="polite"></p>
-  <section id="track-test" hidden><label for="embed-code">Private SoundCloud embed code</label><textarea id="embed-code" placeholder="Paste the iframe code from SoundCloud Share → Embed"></textarea><button id="load-track" type="button">Load test track</button></section>
-  <small id="build-id">Mandelbrot demo3 r1 · 2026-09-27</small>
-  <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
-</main>
-<script src="https://w.soundcloud.com/player/api.js"></script>
-<script>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Life — a musical experiment</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0c1118;color:#eff4f0}*{box-sizing:border-box}body{margin:0}main{max-width:900px;margin:auto;padding:22px}h1{font-size:clamp(2rem,6vw,3.5rem);margin:0}p{color:#b4c5c5;line-height:1.5}.layout{display:grid;grid-template-columns:1fr 280px;gap:22px;align-items:start}canvas{width:100%;aspect-ratio:1;background:#07121a;border:1px solid #355059;border-radius:12px}.panel{background:#17232b;border:1px solid #355059;border-radius:12px;padding:18px}label{display:block;margin:12px 0}input[type=range]{width:100%;accent-color:#7de5ba}button{font:inherit;background:#83ebbb;color:#10241b;border:0;border-radius:9px;padding:12px 22px;font-weight:700;cursor:pointer}button:disabled{opacity:.5;cursor:wait}button.secondary{background:#364c55;color:white}select{font:inherit;background:#243842;color:white;border:1px solid #66848b;border-radius:6px;padding:5px}output{float:right;color:#9feac4}.stats{display:flex;justify-content:space-between;margin:12px 0;font-variant-numeric:tabular-nums}#status{min-height:3em;color:#d1decf}.soundcloud{position:absolute;left:-10000px;width:300px;height:166px;overflow:hidden}@media(max-width:720px){.layout{grid-template-columns:1fr}.panel{order:-1}}
+</style></head><body><main><h1>Life</h1><p>Give one or two cells a world to grow in. The outcome is calculated first; the music follows their fate. The ending stays hidden until the track finishes.</p><div class="layout"><div><canvas id="field" width="576" height="576" aria-label="Cell population"></canvas><div class="stats"><span id="clock">0:00</span><span id="population">2 cells</span></div><p id="status" role="status">Choose your conditions.</p></div><div class="panel"><label>Founders <select id="founders"><option value="1">One cell</option><option value="2" selected>Two cells</option></select></label><label>Fertility <output id="fertility-value"></output><input id="fertility" type="range" min="5" max="90" value="48"></label><label>Resources <output id="resources-value"></output><input id="resources" type="range" min="5" max="90" value="45"></label><label>Resilience <output id="resilience-value"></output><input id="resilience" type="range" min="5" max="90" value="42"></label><label>World seed <input id="seed" type="number" min="1" max="999999" value="219" style="width:110px;font:inherit"></label><p>Same settings and seed give the same life story.</p><button id="start" disabled>Calculating…</button> <button id="reset" class="secondary" type="button">New world</button><p id="track" aria-live="polite"></p></div></div><div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div></main><script src="https://w.soundcloud.com/player/api.js"></script><script>
 'use strict';
-// Embedded from mandelbrot-demo.json; the standalone page requires no fetch.
-const recipe={"version":1,"title":"Mandelbrot — inward journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0},{"time":29,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":0.0000032},"iterations":{"from":600,"to":1500},"quality":352,"transition":0},{"time":58,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":{"from":[-0.743643887037151,0.13182590420533],"to":[-0.743643885837151,0.13182590420533]},"zoom":{"from":0.0000032,"to":3.2e-9},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0},{"time":87,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":0,"to":600}},{"time":116,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":600,"to":1200}},{"time":145,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":3.2e-9,"to":3.2e-9},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-9,"from":1200,"to":1800}},{"time":174,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":{"from":[-0.743643885837151,0.13182590420533],"to":[-0.743643887037151,0.13182590420533]},"zoom":{"from":3.2e-9,"to":0.0000032},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0},{"time":203,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0000032,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0},{"time":232,"effect":"procedural","generator":"mandelbrot","seed":219,"palette":"neon","center":[-0.743643887037151,0.13182590420533],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0}]};
-const C=document.getElementById('stage'),ctx=C.getContext('2d');
-const playButton=document.getElementById('play'),status=document.getElementById('status'),sc=document.getElementById('sc');
-const testPanel=document.getElementById('track-test'),embedCode=document.getElementById('embed-code'),loadTrack=document.getElementById('load-track');
-const palette=['#ff63bd','#70e8ff','#e5ff79','#ffa35d'].map(hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)));
-const renderCanvas=document.createElement('canvas'),renderContext=renderCanvas.getContext('2d');
-const nominalDuration=recipe.duration,baseTimes=recipe.segments.map(s=>s.time);
-let widget=null,widgetReady=false,playing=false,starting=false,gestureStarted=false,ended=false,resumeRequested=false;
-let position=0,anchor=0,anchorTime=performance.now(),lastPoll=0,lastProbe=null,probeTimer=null,probeStarted=0,rendered=null,busy=false,sent=null,lastRequest=-Infinity,worker=null;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function cameraAt(t) {
-  let index=0;for(let i=1;i<recipe.segments.length;i++)if(t>=recipe.segments[i].time)index=i;
-  const s=recipe.segments[index],end=recipe.segments[index+1]?.time??recipe.duration;
-  const f=clamp((t-s.time)/Math.max(.001,end-s.time),0,1);
-  const start=Array.isArray(s.center)?s.center:s.center.from;
-  const finish=Array.isArray(s.center)?s.center:s.center.to;
-  let cx=start[0]+(finish[0]-start[0])*f,cy=start[1]+(finish[1]-start[1])*f;
-  if(s.orbit){
-    const angle=(s.orbit.from+(s.orbit.to-s.orbit.from)*f)*Math.PI/180;
-    cx+=s.orbit.radius*Math.cos(angle);cy+=s.orbit.radius*Math.sin(angle);
-  }
-  return {cx,cy,span:s.zoom.from*Math.pow(s.zoom.to/s.zoom.from,f),
-    iterations:Math.round(s.iterations.from+(s.iterations.to-s.iterations.from)*f),width:s.quality,seed:s.seed};
-}
-function compute(p) {
-  const {width:w,cx,cy,span,iterations:max,palette:colors,seed}=p;
-  const pixels=new Uint8ClampedArray(w*w*4),unit=span/w,phase=(seed%997)*.001;
-  // Saturated hue bands gradually replace RGB blends as the camera dives.
-  const depth=clamp(Math.log10(3.2/span)/9,0,1),colorMix=clamp((depth-.22)/.62,0,1);
-  const hueStops=[.91,.53,.20,.07];
-  for(let y=0;y<w;y++)for(let x=0;x<w;x++){
-    const cr=cx+(x+.5-w/2)*unit,ci=cy-(y+.5-w/2)*unit;
-    const xr=cr-.25,q=xr*xr+ci*ci,inside=q*(q+xr)<=.25*ci*ci||(cr+1)*(cr+1)+ci*ci<=.0625;
-    let zr=0,zi=0,n=0,mag=0;
-    if(!inside)for(;n<max;n++){
-      const zr2=zr*zr,zi2=zi*zi;mag=zr2+zi2;if(mag>256)break;
-      zi=2*zr*zi+ci;zr=zr2-zi2+cr;
-    }else n=max;
-    const k=(y*w+x)*4;
-    if(n===max){pixels[k]=5;pixels[k+1]=7;pixels[k+2]=17}
-    else {
-      const smooth=n+1-Math.log2(Math.max(1,Math.log2(Math.sqrt(mag))));
-      const v=smooth*.042+phase,base=Math.floor(v),fraction=v-base;
-      const a=colors[((base%4)+4)%4],b=colors[(((base+1)%4)+4)%4];
-      const f=fraction*fraction*(3-2*fraction),shade=.66+.34*Math.min(1,n/30);
-      let r=a[0]*(1-f)+b[0]*f,g=a[1]*(1-f)+b[1]*f,bl=a[2]*(1-f)+b[2]*f;
-      const mid=(Math.max(r,g,bl)+Math.min(r,g,bl))/2-18*.9,boost=1+1.8*.9;
-      r=clamp(mid+(r-mid)*boost,0,255);g=clamp(mid+(g-mid)*boost,0,255);bl=clamp(mid+(bl-mid)*boost,0,255);
-      if(colorMix){
-        const first=hueStops[((base%4)+4)%4],last=hueStops[(((base+1)%4)+4)%4];
-        const hue=(first+(((last-first+1.5)%1)-.5)*f+1)%1;
-        const wheel=hue*6,sector=Math.floor(wheel),part=wheel-sector;
-        const value=.72+.28*(.5+.5*Math.cos(smooth*.18)),low=value*.03;
-        const falling=value*(1-.97*part),rising=value*(.03+.97*part);
-        const bright=value*255,dim=low*255,fall=falling*255,rise=rising*255;
-        let rr,gg,bb;
-        switch(sector%6){
-          case 0: rr=bright;gg=rise;bb=dim;break;
-          case 1: rr=fall;gg=bright;bb=dim;break;
-          case 2: rr=dim;gg=bright;bb=rise;break;
-          case 3: rr=dim;gg=fall;bb=bright;break;
-          case 4: rr=rise;gg=dim;bb=bright;break;
-          default: rr=bright;gg=dim;bb=fall;
-        }
-        r+=colorMix*(rr-r);g+=colorMix*(gg-g);bl+=colorMix*(bb-bl);
-      }
-      pixels[k]=shade*r;pixels[k+1]=shade*g;pixels[k+2]=shade*bl;
-    }
-    pixels[k+3]=255;
-  }
-  return pixels;
-}
-function finish(p,pixels) {
-  renderCanvas.width=p.width;renderCanvas.height=p.width;
-  const image=renderContext.createImageData(p.width,p.width);image.data.set(pixels);
-  renderContext.putImageData(image,0,0);rendered=p;busy=false;draw(position);
-}
-try {
-  const source='const clamp='+clamp.toString()+';const compute='+compute.toString()+
-    ';self.onmessage=e=>{const pixels=compute(e.data);self.postMessage({p:e.data,pixels:pixels.buffer},[pixels.buffer])}';
-  const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
-  worker=new Worker(url);URL.revokeObjectURL(url);
-  worker.onmessage=e=>finish(e.data.p,new Uint8ClampedArray(e.data.pixels));
-  worker.onerror=()=>{worker.terminate();worker=null;busy=false;draw(position)};
-}catch(_){worker=null}
-function request(p) {
-  busy=true;sent=p;lastRequest=performance.now();
-  const job={...p,palette};
-  if(worker)worker.postMessage(job);
-  else setTimeout(()=>finish(p,compute(job)),0);
-}
-function draw(t) {
-  const p=cameraAt(t);ctx.fillStyle='#101018';ctx.fillRect(0,0,800,800);
-  if(rendered){
-    const n=renderCanvas.width,sourceSize=n*p.span/rendered.span;
-    const sx=n/2+(p.cx-rendered.cx)*n/rendered.span-sourceSize/2;
-    const sy=n/2-(p.cy-rendered.cy)*n/rendered.span-sourceSize/2;
-    ctx.imageSmoothingEnabled=true;
-    if(sourceSize<1||sourceSize>n*2||sx>n||sy>n||sx+sourceSize<0||sy+sourceSize<0)
-      ctx.drawImage(renderCanvas,0,0,n,n,0,0,800,800);
-    else ctx.drawImage(renderCanvas,sx,sy,sourceSize,sourceSize,0,0,800,800);
-  }
-  const change=!rendered||Math.abs(Math.log(p.span/rendered.span))>(playing?.055:1e-5)||
-    Math.hypot(p.cx-rendered.cx,p.cy-rendered.cy)>p.span*.03||
-    Math.abs(p.iterations-rendered.iterations)>15||p.width!==rendered.width;
-  if(change&&!busy&&performance.now()-lastRequest>90)request(p);
-}
-function clock(){return clamp(anchor+(performance.now()-anchorTime)/1000,0,recipe.duration)}
-function setPlaying(value){playing=value;playButton.textContent=value?'❚❚ Pause':'▶ Play';playButton.disabled=false}
-function stopProbe(){if(probeTimer)clearInterval(probeTimer);probeTimer=null;lastProbe=null}
-function activate(ms){
-  if(!starting)return;
-  starting=false;stopProbe();
-  if(Number.isFinite(ms)&&ms>=0)position=clamp(ms/1000,0,recipe.duration);
-  anchor=position;anchorTime=performance.now();status.textContent='';setPlaying(true);draw(position);
-}
-function observe(ms){
-  if((!starting&&!(resumeRequested&&!playing))||!Number.isFinite(ms)||ms<0)return;
-  // A paused track can already be far from zero; only new movement proves playback resumed.
-  if(lastProbe!==null&&ms-lastProbe>=60){
-    if(!starting)starting=true;
-    activate(ms);return;
-  }
-  if(lastProbe===null||ms<lastProbe)lastProbe=ms;
-}
-function requestStart(){
-  if(!widgetReady||starting)return;
-  if(ended){widget.seekTo(0);position=0;ended=false}
-  starting=true;resumeRequested=true;status.textContent='';probeStarted=performance.now();
-  playButton.textContent='Starting…';
-  let retries=0;
-  probeTimer=setInterval(()=>{
-    if(!starting||!widgetReady){stopProbe();return}
-    widget.getPosition(observe);
-    if(/iPhone|iPod/.test(navigator.userAgent)&&performance.now()-probeStarted>900*(retries+1)&&retries<3){retries++;widget.play()}
-    if(performance.now()-probeStarted>5000){starting=false;resumeRequested=false;stopProbe();setPlaying(false);status.textContent='SoundCloud did not start. Tap Play again.'}
-  },180);
-  widget.play();
-}
-playButton.addEventListener('pointerdown',e=>{
-  if(e.pointerType==='touch'&&/iPhone|iPod/.test(navigator.userAgent)&&widgetReady&&!playing&&!starting){
-    gestureStarted=true;requestStart();
-  }else gestureStarted=false;
-});
-playButton.addEventListener('click',()=>{
-  if(gestureStarted){gestureStarted=false;if(widgetReady&&!playing)widget.play();return}
-  if(!widgetReady)return;
-  if(playing){resumeRequested=false;position=clock();setPlaying(false);draw(position);widget.pause();return}
-  requestStart();
-});
-if(new URLSearchParams(location.search).has('testAudio'))testPanel.hidden=false;
-loadTrack.addEventListener('click',()=>{
-  const raw=embedCode.value.trim();
-  const src=raw.match(/<iframe\b[^>]*\bsrc=["']([^"']+)["']/i)?.[1]?.replaceAll('&amp;','&');
-  let target;
-  try{
-    const player=new URL(src);
-    if(player.protocol!=='https:'||player.hostname!=='w.soundcloud.com'||player.pathname!=='/player/')throw Error('player');
-    target=new URL(player.searchParams.get('url'));
-    if(target.protocol!=='https:'||target.hostname!=='api.soundcloud.com'||!/^\/tracks\//.test(target.pathname))throw Error('track');
-  }catch(_){status.textContent='Paste the full iframe code from SoundCloud Share → Embed.';return}
-  if(!widget){status.textContent='SoundCloud player is still loading.';return}
-  starting=false;resumeRequested=false;stopProbe();playing=false;widgetReady=false;ended=false;position=0;anchor=0;
-  playButton.disabled=true;playButton.textContent='Loading track…';status.textContent='';
-  embedCode.value='';
-  widget.load(target.href,{auto_play:false,visual:false,show_comments:false,show_reposts:false,callback:audioReady});
-});
-function audioReady(){
-  widgetReady=true;resumeRequested=false;setPlaying(false);status.textContent='';
-  widget.getDuration(ms=>{if(Number.isFinite(ms)&&ms>0){recipe.duration=ms/1000;recipe.segments.forEach((s,i)=>s.time=baseTimes[i]*recipe.duration/nominalDuration);draw(position)}});
-}
-function initAudio(){
-  if(!window.SC?.Widget){playButton.textContent='Track unavailable';status.textContent='SoundCloud could not load.';return}
-  sc.src='https://w.soundcloud.com/player/?url='+encodeURIComponent(recipe.soundcloud)+'&auto_play=false&visual=false&show_comments=false&show_reposts=false';
-  widget=SC.Widget(sc);
-  widget.bind(SC.Widget.Events.READY,audioReady);
-  widget.bind(SC.Widget.Events.PLAY_PROGRESS,e=>observe(e?.currentPosition));
-  widget.bind(SC.Widget.Events.PAUSE,()=>{
-    if(starting&&!playing)return;
-    if(playing){position=clock();setPlaying(false);draw(position);lastProbe=null}
-  });
-  widget.bind(SC.Widget.Events.FINISH,()=>{starting=false;resumeRequested=false;stopProbe();position=recipe.duration;ended=true;setPlaying(false);draw(position)});
-  widget.bind(SC.Widget.Events.ERROR,()=>{starting=false;resumeRequested=false;stopProbe();widgetReady=false;playButton.textContent='Track unavailable';playButton.disabled=true;status.textContent='SoundCloud could not play this track.'});
-}
-function frame(now){
-  if(playing){
-    if(widgetReady&&now-lastPoll>200){
-      lastPoll=now;widget.getPosition(ms=>{
-        if(!playing||!Number.isFinite(ms))return;
-        const actual=ms/1000;if(Math.abs(actual-clock())>.15){anchor=actual;anchorTime=performance.now()}
-      });
-    }
-    position=clock();draw(position);
-  }
-  requestAnimationFrame(frame);
-}
-draw(0);initAudio();requestAnimationFrame(frame);
-</script>
-</body>
-</html>
+const $=id=>document.getElementById(id),N=48,SIZE=N*N,RATE=4,PLAN_SECONDS=259;
+const tracks={extinct:{title:'Piano and Strings',url:'https://soundcloud.com/hewmorist/piano-and-strings'},surviving:{title:'Fractal Journey',url:'https://soundcloud.com/hewmorist/fractal-journey'},thriving:{title:'Planet Mandelbrot',url:'https://soundcloud.com/hewmorist/mandelbrot-techno'}};
+const canvas=$('field'),ctx=canvas.getContext('2d');let frames=[],counts=[],outcome='',widget=null,ready=false,playing=false,starting=false,elapsed=0,duration=PLAN_SECONDS,anchor=0,anchorTime=0,token=0,probe=null,prepared=false;
+const work=new Worker(URL.createObjectURL(new Blob([`const N=${N},SIZE=N*N,RATE=${RATE};
+function rand(seed,step,i,salt){let x=(seed^Math.imul(step+1,0x9e3779b1)^Math.imul(i+1,0x85ebca6b)^salt)|0;x=Math.imul(x^(x>>>16),0x7feb352d);x=Math.imul(x^(x>>>15),0x846ca68b);return ((x^(x>>>16))>>>0)/4294967296}
+onmessage=e=>{let {settings,token,seconds}=e.data,seed=settings.seed|0,live=new Uint8Array(SIZE),frames=[],counts=[];let middle=(N>>1)*N+(N>>1);live[middle]=1;if(settings.founders===2)live[middle+1]=1;let cap=Math.round(20+settings.resources/100*SIZE*.65);for(let step=0;step<=Math.ceil(seconds*RATE);step++){frames.push(live);let pop=0;for(let v of live)pop+=v;counts.push(pop);if(step===Math.ceil(seconds*RATE))break;let next=new Uint8Array(SIZE),pressure=pop/cap;for(let i=0;i<SIZE;i++){let x=i%N,y=(i/N)|0,neighbors=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;neighbors+=live[((y+dy+N)%N)*N+(x+dx+N)%N]}
+if(live[i]){let death=.008+(1-settings.resilience/100)*.065+Math.max(0,pressure-.55)*.15+Math.max(0,neighbors-4)*.08;next[i]=rand(seed,step,i,1)>=death?1:0}else if(neighbors){let birth=(settings.fertility/100)*.058*neighbors*Math.max(.008,1-pressure)*Math.max(.12,1-neighbors/10);next[i]=rand(seed,step,i,2)<birth?1:0}}
+live=next}let last=counts.at(-1),peak=Math.max(...counts),outcome=last===0?'extinct':last>=Math.max(45,cap*.22)?'thriving':'surviving';postMessage({token,frames,counts,outcome,peak,cap},frames.map(f=>f.buffer))};`],{type:'text/javascript'})));
+function settings(){return {founders:+$('founders').value,fertility:+$('fertility').value,resources:+$('resources').value,resilience:+$('resilience').value,seed:Math.max(1,Math.min(999999,+$('seed').value||1))}}
+function time(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')}
+function show(t){let index=Math.min(frames.length-1,Math.floor(t/Math.max(1,duration)*PLAN_SECONDS*RATE));let cells=frames[index];if(!cells)return;ctx.fillStyle='#07121a';ctx.fillRect(0,0,576,576);ctx.fillStyle='#81eec2';for(let i=0;i<SIZE;i++)if(cells[i])ctx.fillRect((i%N)*12+1,Math.floor(i/N)*12+1,10,10);$('population').textContent=counts[index]+' cells';$('clock').textContent=time(t)}
+function status(message){$('status').textContent=message}
+function controls(){let s=settings();for(let key of ['fertility','resources','resilience'])$(key+'-value').textContent=s[key]+'%'}
+function stop(){clearInterval(probe);probe=null;if(widget)widget.pause();playing=false;starting=false;elapsed=0}
+function prepare(){let id=++token;stop();ready=false;prepared=false;frames=[];counts=[];$('start').disabled=true;$('start').textContent='Calculating…';$('track').textContent='';controls();status('Calculating the life story…');work.postMessage({token:id,settings:settings(),seconds:PLAN_SECONDS})}
+work.onmessage=e=>{let d=e.data;if(d.token!==token)return;frames=d.frames.map(b=>new Uint8Array(b));counts=d.counts;outcome=d.outcome;prepared=true;show(0);status('Life story calculated. Loading its music…');$('track').textContent='Music selected for this world. Its ending is still a surprise.';loadTrack(tracks[outcome].url,d.token)};
+work.onerror=()=>{status('The simulation could not run. Reload the page to try again.');$('start').textContent='Unavailable'};
+function loadTrack(url,id){if(!window.SC?.Widget){status('SoundCloud player is unavailable.');return}if(widget){widget.load(url,{auto_play:false,visual:false,show_comments:false,show_reposts:false,callback:()=>audioReady(id)})}else{$('sc').src='https://w.soundcloud.com/player/?url='+encodeURIComponent(url)+'&auto_play=false&visual=false&show_comments=false&show_reposts=false';widget=SC.Widget($('sc'));widget.bind(SC.Widget.Events.READY,()=>audioReady(id));widget.bind(SC.Widget.Events.PLAY_PROGRESS,e=>{if(!starting||!Number.isFinite(e?.currentPosition)||e.currentPosition<250)return;starting=false;playing=true;elapsed=e.currentPosition/1000;anchor=elapsed;anchorTime=performance.now();$('start').textContent='Pause';status('The world is unfolding.');clearInterval(probe);probe=null});widget.bind(SC.Widget.Events.PAUSE,()=>{if(playing){elapsed=clock();playing=false;$('start').textContent='Resume';status('Paused.')}});widget.bind(SC.Widget.Events.FINISH,finish);widget.bind(SC.Widget.Events.ERROR,()=>{ready=false;$('start').disabled=true;status('The selected SoundCloud track could not load. Change a setting to try again.')})}}
+function audioReady(id){if(id!==token||!prepared)return;ready=true;$('start').disabled=false;$('start').textContent='Start';status('Ready. Tap Start to hear this world’s music.');widget.getDuration(ms=>{if(id===token&&Number.isFinite(ms)&&ms>0)duration=ms/1000})}
+function clock(){return Math.min(duration,anchor+(performance.now()-anchorTime)/1000)}
+function tick(){if(playing){elapsed=clock();show(elapsed);if(elapsed>=duration)finish()}requestAnimationFrame(tick)}
+function finish(){if(!prepared||!playing&&!starting)return;clearInterval(probe);probe=null;playing=false;starting=false;elapsed=duration;show(duration);$('start').textContent='Replay';status(outcome==='extinct'?'Extinct: the population died out.':outcome==='thriving'?'Thriving: the population filled its world.':'Surviving: the population made it through.');$('track').textContent='Soundtrack: '+tracks[outcome].title}
+$('start').onclick=()=>{if(!ready)return;if(playing){elapsed=clock();playing=false;widget.pause();$('start').textContent='Resume';return}if(elapsed>=duration){elapsed=0;show(0);widget.seekTo(0)}starting=true;status('Starting SoundCloud…');$('start').textContent='Starting…';widget.play();let tries=0;clearInterval(probe);probe=setInterval(()=>{if(!starting)return;if(++tries===3&&/iPhone|iPod/.test(navigator.userAgent))widget.play();if(tries>12){clearInterval(probe);probe=null;starting=false;$('start').textContent='Start';status('SoundCloud did not start. Tap Start again.')}},400)};
+$('reset').onclick=()=>{$('seed').value=1+Math.floor(Math.random()*999999);prepare()};for(let key of ['founders','fertility','resources','resilience','seed'])$(key).addEventListener('change',prepare);prepare();requestAnimationFrame(tick);
+</script></body></html>
