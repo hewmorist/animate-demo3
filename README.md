@@ -1,7 +1,7 @@
-# Planet Julia — flight experiment
+# Planet Cubic Julia — flight experiment
 
-This branch adapts the `player2` spiral descent, one deep circle, and spiral ascent to a quadratic Julia set. It keeps the segment times, zooms, orbit angles, radial motion, palette, timeline scrubber, SoundCloud transport, and browser frame cache. The Julia iteration uses `z → z² + c` with fixed `c = −0.7269 + 0.1889i`; the camera targets a repelling period-two point near `−0.2108571523 − 0.3266551490i`.
+This branch reuses the `planet-julia` flight: the same twelve time markers, zoom schedule, spiral angles, orbit radii, one deep circle, spiral ascent, palette, scrubber, SoundCloud transport and browser frame cache. The camera coordinates are translated to a detailed boundary point near `−0.3348691278 − 0.4897725872i`. The opening view shows the three-lobed cubic Julia set.
 
-`index.html` embeds the recipe from `julia-demo.json`, so the static page does not fetch the JSON. The default rendering mode is `precache`, calculating 105 frames in a background worker for about 1:58–3:30, with live rendering elsewhere. `?frames=motion` remains available for comparison.
+The renderer iterates `z → z³ + c` with fixed `c = 0.45 + 0.55i` from the earlier cubic Julia demo. `index.html` embeds the recipe in `cubic-julia-demo.json`; the separate JSON is included for editing. The default `precache` mode calculates 105 frames in the browser worker for roughly 1:58–3:30, with live rendering elsewhere.
 
-The SoundCloud track remains [Planet Mandelbrot](https://soundcloud.com/hewmorist/mandelbrot-techno) as temporary timing audio for this experiment. The visible revision is `Planet Julia r1`.
+The existing [Planet Mandelbrot](https://soundcloud.com/hewmorist/mandelbrot-techno) track remains as timing audio for this experiment. The visible revision is `Planet Cubic Julia r1`.
