@@ -1,3 +1,4 @@
+document.getElementById("action").textContent="ENGINE LOADED";
 
 'use strict';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -70,7 +71,7 @@ function camera(){let f=clamp(legTime/LEG_SECONDS,0,1),span=START_SPAN*Math.pow(
 return {cx:a[0]+camX*span*.36,cy:a[1]-camY*span*.36,span,iterations:Math.round(110+f*480),width:Math.round(Math.min(300,stage.clientWidth*.62)),seed:219+leg*11,palette}}
 function show(head,body,label){heading.textContent=head;copy.textContent=body;action.textContent=label;overlay.classList.remove('hide')}
 function toggle(){if(!started){started=true;playing=true;overlay.classList.add('hide')}else{playing=!playing;overlay.classList.toggle('hide',playing);if(!playing)show('PAUSED','Choose a new direction when you resume.','RESUME')}pause.textContent=playing?'PAUSE':'RESUME'}
-action.onclick=toggle;pause.onclick=toggle;
+document.getElementById("action").textContent="CONTROLS READY";action.onclick=toggle;pause.onclick=toggle;
 function point(e){let b=stage.getBoundingClientRect();aimX=clamp((e.clientX-b.left)/b.width*2-1,-1,1);aimY=clamp((e.clientY-b.top)/b.height*2-1,-1,1);reticle.style.left=((aimX+1)*50)+'%';reticle.style.top=((aimY+1)*50)+'%'}
 stage.onpointerdown=e=>{stage.setPointerCapture(e.pointerId);point(e)};stage.onpointermove=e=>{if(e.buttons||e.pointerType==='touch')point(e)};
 window.onkeydown=e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==='Space'&&!e.repeat)toggle()};
