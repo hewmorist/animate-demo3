@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Planet Julia</title>
-  <meta name="app-revision" content="planet-julia r1">
+  <title>Planet Cubic Julia</title>
+  <meta name="app-revision" content="planet-cubic-julia r1">
   <style>
     :root { color-scheme: dark; font-family: system-ui,-apple-system,Segoe UI,sans-serif; background: #090b13; color: #f6f0e6 }
     * { box-sizing: border-box }
@@ -25,18 +25,18 @@
 </head>
 <body>
 <main>
-  <canvas id="stage" width="800" height="800" aria-label="Julia set animation"></canvas>
+  <canvas id="stage" width="800" height="800" aria-label="Cubic Julia set animation"></canvas>
   <div id="transport"><input id="timeline" type="range" min="0" max="261" step="0.01" value="0" aria-label="Track position"><span id="time-label">0:00 / 4:21</span></div>
   <button id="play" disabled>Loading track…</button>
   <p id="status" role="status" aria-live="polite"></p>
-  <small id="build-id">Planet Julia r1 · 2026-09-27</small>
+  <small id="build-id">Planet Cubic Julia r1 · 2026-09-27</small>
   <div class="soundcloud"><iframe id="sc" title="SoundCloud audio player" allow="autoplay" src="about:blank"></iframe></div>
 </main>
 <script src="https://w.soundcloud.com/player/api.js"></script>
 <script>
 'use strict';
-// Embedded from julia-demo.json; the standalone page requires no fetch.
-const recipe={"version":1,"title":"Planet Julia — spiral journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":0.0032,"to":3.2e-06},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-06,"to":3.2e-09},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-09,"to":3.2e-06},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":3.2e-06,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"julia","seed":219,"palette":"neon","center":[-0.2108571523020657,-0.3266551490101921],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}],"juliaParameter":[-0.7269,0.1889]};
+// Embedded from cubic-julia-demo.json; the standalone page requires no fetch.
+const recipe={"version":1,"title":"Planet Cubic Julia — spiral journey","duration":261,"soundcloud":"https://soundcloud.com/hewmorist/mandelbrot-techno","segments":[{"time":0,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2,"to":0.0032},"iterations":{"from":120,"to":600},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":0,"to":720,"fadeIn":true}},{"time":40.6,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":0.0032,"to":3.2e-06},"iterations":{"from":600,"to":1500},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":720,"to":1440}},{"time":81.2,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-06,"to":3.2e-09},"iterations":{"from":1500,"to":3000},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1440,"to":2160}},{"time":121.8,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0,"progressTo":0.16666666666666666,"from":0,"to":60}},{"time":124.7,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.16666666666666666,"progressTo":0.3333333333333333,"from":60,"to":120}},{"time":127.6,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.3333333333333333,"progressTo":0.5,"from":120,"to":180}},{"time":130.5,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.5,"progressTo":0.6666666666666666,"from":180,"to":240}},{"time":133.4,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.6666666666666666,"progressTo":0.8333333333333334,"from":240,"to":300}},{"time":136.3,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-09},"iterations":{"from":3000,"to":3000},"quality":320,"transition":0,"orbit":{"radius":1.2e-09,"bulge":1.2e-09,"progressFrom":0.8333333333333334,"progressTo":1,"from":300,"to":360}},{"time":139.2,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-09,"to":3.2e-06},"iterations":{"from":3000,"to":1500},"quality":320,"transition":0,"orbit":{"relativeRadius":0.375,"from":1800,"to":2520}},{"time":179.79999999999998,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":3.2e-06,"to":0.0032},"iterations":{"from":1500,"to":600},"quality":352,"transition":0,"orbit":{"relativeRadius":0.375,"from":2520,"to":3240}},{"time":220.39999999999998,"effect":"procedural","generator":"cubicjulia","seed":219,"palette":"neon","center":[-0.334869127829966,-0.48977258716311517],"zoom":{"from":0.0032,"to":3.2},"iterations":{"from":600,"to":120},"quality":384,"transition":0,"orbit":{"relativeRadius":0.375,"from":3240,"to":3960,"fadeOut":true}}],"juliaParameter":[0.45,0.55]};
 const options=new URLSearchParams(location.search);
 const frameMode=options.get('frames')||'precache';
 const shortBlend=frameMode==='blend';
@@ -45,9 +45,9 @@ const motionFrames=frameMode==='motion'||cacheFrames;
 const completeFrames=frameMode==='complete'||shortBlend||motionFrames;
 if(options.get('path')==='straight'){
   recipe.segments.forEach(segment=>delete segment.orbit);
-  document.title='Planet Julia — straight path test';
+  document.title='Planet Cubic Julia — straight path test';
 }
-if(completeFrames&&!cacheFrames)document.title=motionFrames?'Planet Julia — interpolated motion test':shortBlend?'Planet Julia — finished-frame blend test':'Planet Julia — complete frames test';
+if(completeFrames&&!cacheFrames)document.title=motionFrames?'Planet Cubic Julia — interpolated motion test':shortBlend?'Planet Cubic Julia — finished-frame blend test':'Planet Cubic Julia — complete frames test';
 const C=document.getElementById('stage'),ctx=C.getContext('2d');
 const timeline=document.getElementById('timeline');
 const timeLabel=document.getElementById('time-label');
@@ -108,12 +108,12 @@ function compute(p) {
     let zr=cr,zi=ci,n=0,mag=0;
     for(;n<max;n++){
       const zr2=zr*zr,zi2=zi*zi;mag=zr2+zi2;if(mag>256)break;
-      zi=2*zr*zi+juliaParameter[1];zr=zr2-zi2+juliaParameter[0];
+      zi=zi*(3*zr2-zi2)+juliaParameter[1];zr=zr*(zr2-3*zi2)+juliaParameter[0];
     }
     const k=(y*w+x)*4;
     if(n===max){pixels[k]=5;pixels[k+1]=7;pixels[k+2]=17}
     else {
-      const smooth=n+1-Math.log2(Math.max(1,Math.log2(Math.sqrt(mag))));
+      const smooth=n+1-Math.log(Math.max(1,Math.log(Math.sqrt(mag))))/Math.log(3);
       const v=smooth*.042+phase,base=Math.floor(v),fraction=v-base;
       const a=colors[((base%4)+4)%4],b=colors[(((base+1)%4)+4)%4];
       const f=fraction*fraction*(3-2*fraction),shade=.66+.34*Math.min(1,n/30);
